@@ -178,9 +178,7 @@ export const SwipeRow = forwardRef<SwipeRowHandle, SwipeRowProps>(
                   />
                 ) : (
                   <div className="w-full h-full bg-secondary/30 flex items-center justify-center p-2">
-                    <span className="font-display font-bold text-center text-[9px] uppercase leading-tight">
-                      {item.name}
-                    </span>
+                    <span className="text-black/20 text-2xl">👕</span>
                   </div>
                 )}
 
@@ -193,12 +191,6 @@ export const SwipeRow = forwardRef<SwipeRowHandle, SwipeRowProps>(
                 )}
               </div>
 
-              {/* Name strip */}
-              <div className="px-2 py-1.5 border-t-2 border-black bg-white shrink-0">
-                <span className="font-bold text-[10px] uppercase tracking-tight line-clamp-1 block">
-                  {item.name}
-                </span>
-              </div>
             </div>
           ))}
 
