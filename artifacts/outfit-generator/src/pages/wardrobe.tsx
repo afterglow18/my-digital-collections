@@ -1,10 +1,9 @@
-import React, { useRef, useState, useCallback, useEffect, RefObject } from "react";
+import React, {
+  useRef, useState, useCallback, useEffect, RefObject,
+} from "react";
 import {
-  useListClothing,
-  getListClothingQueryKey,
-  useSaveOutfit,
-  useListOutfits,
-  getListOutfitsQueryKey,
+  useListClothing, getListClothingQueryKey,
+  useSaveOutfit, useListOutfits, getListOutfitsQueryKey,
   ClothingItem,
 } from "@workspace/api-client-react";
 import { X } from "lucide-react";
@@ -19,70 +18,87 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT, FREE_OUTFIT_LIMIT } from "@/lib/entitlements";
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 type RowKey   = "tops" | "bottoms" | "shoes";
 type Category = "tops" | "bottoms" | "shoes" | "accessories" | "outerwear" | "dresses";
 
-const ROWS: { key: RowKey; label: string; addLabel: string }[] = [
-  { key: "tops",    label: "Tops",    addLabel: "Add Top"    },
-  { key: "bottoms", label: "Bottoms", addLabel: "Add Bottom" },
-  { key: "shoes",   label: "Shoes",   addLabel: "Add Shoes"  },
+// ── Config ────────────────────────────────────────────────────────────────────
+const ROWS: { key: RowKey; label: string; addLabel: string; btnLabel: string }[] = [
+  { key: "tops",    label: "Tops",    addLabel: "Add Top",    btnLabel: "+ ADD TOPS"    },
+  { key: "bottoms", label: "Bottoms", addLabel: "Add Bottom", btnLabel: "+ ADD BOTTOMS" },
+  { key: "shoes",   label: "Shoes",   addLabel: "Add Shoes",  btnLabel: "+ ADD SHOES"   },
 ];
 
-const NAV_H = 90; // AppLayout bottom-nav height in px
+const NAV_H   = 90;   // bottom nav height (px) — from AppLayout
+const BAR_H   = 60;   // HTML action bar height (px)
 
-// ── Background image natural size ────────────────────────────────────────────
+// ── Source image natural size ─────────────────────────────────────────────────
 const IMG_W = 853;
 const IMG_H = 1844;
 
-// ── Landmark fractions (measured from the 853×1844 image) ────────────────────
-// All values = fraction of image width or height (0 → 1)
+// ── Landmarks (fractions of image width / height) ─────────────────────────────
+//  All measured from the 853×1844 PNG.
 const LM = {
-  doorL: 0.141,   // left door right edge  (x fraction)
-  doorR: 0.859,   // right door left edge  (x fraction)
+  // Inner closet edges (x fraction) — just inside the yellow doors
+  doorL: 0.148,
+  doorR: 0.852,
 
-  // Badge centre — overlays the image's "5/20 ITEMS" pill
+  // Badge y-centre
   badgeCY: 0.297,
 
-  // Per-row: { add button y-fraction, carousel top y-frac, carousel bottom y-frac }
+  // Per-row: rod centre y, carousel start y, carousel end y
+  // rodCY is placed at the image's original small label pill centre (slightly above the rod),
+  // so the large pill button covers both the old label and the rod line.
   rows: [
-    { addY: 0.353, carY: 0.362, carBot: 0.510 }, // TOPS
-    { addY: 0.548, carY: 0.558, carBot: 0.676 }, // BOTTOMS
-    { addY: 0.715, carY: 0.726, carBot: 0.838 }, // SHOES
+    { rodCY: 0.342, carY: 0.371, carBot: 0.507 }, // TOPS
+    { rodCY: 0.543, carY: 0.564, carBot: 0.667 }, // BOTTOMS
+    { rodCY: 0.707, carY: 0.727, carBot: 0.800 }, // SHOES
   ],
 
-  // Bottom action bar
-  barY:   0.869,
-  barBot: 0.958,
-
-  // Hanger-icon and mannequin-icon x centres within bottom bar
+  // Bottom bar (HTML-rendered, not image-reliant)
+  // Positions for icons inside the bar
   hangerCX: 0.222,
-  manneCX:  0.778,
-  // Save button spans barBtnL → barBtnR
   saveBtnL: 0.282,
   saveBtnR: 0.718,
+  manneCX:  0.778,
 };
 
-// ── useImageRect — computes actual rendered pixel rect of an object-fit:contain image ──
-interface ImgRect { top: number; left: number; width: number; height: number }
+// ── Image rect (responsive: fills full width when possible; scales down on short screens) ──
+// Strategy:
+//   1. Full-width first: imageH = containerW × (IMG_H/IMG_W).
+//   2. Content must fit: shoes row bottom (LM.rows[2].carBot) must not exceed
+//      (containerH − BAR_H). If it does, shrink the image (small side letterbox).
+// This gives zero horizontal letterboxing on all modern iPhones (390+) and
+// only a small letterbox on very short screens (SE ≈ 38 px each side).
+interface ImgRect { top: number; left: number; width: number; height: number; containerW: number }
+
+const CONTENT_BOTTOM_FRAC = 0.800; // = LM.rows[2].carBot — must stay above bottom bar
 
 function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
-  const [rect, setRect] = useState<ImgRect>({ top: 0, left: 0, width: 0, height: 0 });
+  const [rect, setRect] = useState<ImgRect>({ top: 0, left: 0, width: 0, height: 0, containerW: 0 });
   useEffect(() => {
     const compute = () => {
       const c = containerRef.current;
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
-      const cR = cW / cH, iR = IMG_W / IMG_H;
-      let rW: number, rH: number, rL: number, rT: number;
-      if (cR > iR) {
-        // Container wider than image → letterbox left/right; image fills full height, top-aligned
-        rH = cH; rW = cH * iR; rT = 0; rL = (cW - rW) / 2;
+
+      // Full-width natural height
+      const fullH = cW * (IMG_H / IMG_W);
+
+      // Maximum usable height above the HTML bottom bar
+      const maxContentPx = cH - BAR_H;
+
+      let rW: number, rH: number, rL: number;
+      if (fullH * CONTENT_BOTTOM_FRAC <= maxContentPx) {
+        // Modern iPhone — fill edge to edge, no letterboxing
+        rW = cW; rH = fullH; rL = 0;
       } else {
-        // Container taller than image → image fills full width; objectPosition "center top" → rT = 0
-        rW = cW; rH = cW / iR; rL = 0; rT = 0;
+        // Short viewport (SE) — scale image so shoes row fits; slight side letterbox
+        rH = maxContentPx / CONTENT_BOTTOM_FRAC;
+        rW = rH * (IMG_W / IMG_H);
+        rL = (cW - rW) / 2;
       }
-      setRect({ top: rT, left: rL, width: rW, height: rH });
+      setRect({ top: 0, left: rL, width: rW, height: rH, containerW: cW });
     };
     compute();
     window.addEventListener("resize", compute);
@@ -92,16 +108,67 @@ function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
 }
 
 // ── Pixel helpers ─────────────────────────────────────────────────────────────
-const pH  = (ir: ImgRect, f: number) => ir.height * f;
-const pW  = (ir: ImgRect, f: number) => ir.width  * f;
-const pY  = (ir: ImgRect, f: number) => ir.top    + ir.height * f;
-const pX  = (ir: ImgRect, f: number) => ir.left   + ir.width  * f;
+const pH = (ir: ImgRect, f: number) => ir.height * f;
+const pW = (ir: ImgRect, f: number) => ir.width  * f;
+const pX = (ir: ImgRect, f: number) => ir.left   + pW(ir, f);
+const pY = (ir: ImgRect, f: number) => ir.top    + pH(ir, f);
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const GOLD = "#C49B2A";
-const PINK = "#e8a0bc";
+const GOLD  = "#C49B2A";
+const PINK  = "#e8a0bc";
+const CREAM = "#faf5ec";
 
-// ── Bottom-bar icon components ────────────────────────────────────────────────
+// ── Section pill button ───────────────────────────────────────────────────────
+interface SectionBtnProps {
+  label: string;
+  ir: ImgRect;
+  rodCY: number;    // rod y-fraction
+  onClick: () => void;
+  "data-testid"?: string;
+}
+function SectionBtn({ label, ir, rodCY, onClick, "data-testid": testId }: SectionBtnProps) {
+  const btnH   = Math.max(34, Math.round(pH(ir, 0.058)));
+  const btnTop = pY(ir, rodCY) - btnH / 2;
+  const innerW = pW(ir, LM.doorR - LM.doorL);
+
+  return (
+    <button
+      onClick={onClick}
+      data-testid={testId}
+      style={{
+        position: "absolute",
+        top: btnTop,
+        left: pX(ir, LM.doorL),
+        width: innerW,
+        height: btnH,
+        zIndex: 14,
+        // Pill shape, blush pink outline, cream background
+        borderRadius: btnH / 2,
+        background: "linear-gradient(to bottom, rgba(255,248,252,0.97) 0%, rgba(255,238,246,0.95) 100%)",
+        border: `1.6px solid ${PINK}`,
+        boxShadow: "0 2px 8px rgba(200,120,160,0.18), 0 1px 3px rgba(0,0,0,0.06)",
+        // Text
+        color: "#b84070",
+        fontWeight: 700,
+        fontSize: Math.max(11, Math.round(btnH * 0.40)),
+        letterSpacing: "0.07em",
+        textTransform: "uppercase" as const,
+        fontFamily: "'Georgia', serif",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        // prevent text selection
+        userSelect: "none",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ── Bottom action bar icons ───────────────────────────────────────────────────
 function HangerIcon({ size = 22 }: { size?: number }) {
   const w = size, h = size * 0.85;
   return (
@@ -132,20 +199,20 @@ export default function WardrobePage() {
   const containerRef = useRef<HTMLDivElement>(null!);
   const ir = useImageRect(containerRef);
 
-  const rowRefs = {
-    tops:    useRef<SwipeRowHandle>(null),
-    bottoms: useRef<SwipeRowHandle>(null),
-    shoes:   useRef<SwipeRowHandle>(null),
+  const rowRefs: Record<RowKey, React.RefObject<SwipeRowHandle | null>> = {
+    tops:    useRef<SwipeRowHandle | null>(null),
+    bottoms: useRef<SwipeRowHandle | null>(null),
+    shoes:   useRef<SwipeRowHandle | null>(null),
   };
 
-  const [centred,       setCentred]       = useState<Partial<Record<RowKey, ClothingItem>>>({});
-  const [addCategory,   setAddCategory]   = useState<Category | null>(null);
-  const [detailsItem,   setDetailsItem]   = useState<ClothingItem | null>(null);
-  const [showMannequin, setShowMannequin] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
-  const [showPremium,   setShowPremium]   = useState(false);
-  const [isSaveOpen,    setIsSaveOpen]    = useState(false);
-  const [saveName,      setSaveName]      = useState("");
+  const [centred,        setCentred]        = useState<Partial<Record<RowKey, ClothingItem>>>({});
+  const [addCategory,    setAddCategory]    = useState<Category | null>(null);
+  const [detailsItem,    setDetailsItem]    = useState<ClothingItem | null>(null);
+  const [showMannequin,  setShowMannequin]  = useState(false);
+  const [upgradeReason,  setUpgradeReason]  = useState<UpgradeReason | null>(null);
+  const [showPremium,    setShowPremium]    = useState(false);
+  const [isSaveOpen,     setIsSaveOpen]     = useState(false);
+  const [saveName,       setSaveName]       = useState("");
 
   const { data: tops    = [] } = useListClothing({ category: "tops"    }, { query: { queryKey: getListClothingQueryKey({ category: "tops"    }) } });
   const { data: bottoms = [] } = useListClothing({ category: "bottoms" }, { query: { queryKey: getListClothingQueryKey({ category: "bottoms" }) } });
@@ -159,32 +226,34 @@ export default function WardrobePage() {
   const queryClient = useQueryClient();
   const { tier, caps, canAddItem, canSaveOutfit } = useEntitlements();
 
-  // Stable per-key centred callbacks — avoid re-creating inside render
-  const handleCentredTops    = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, tops:    item ?? undefined })), []);
-  const handleCentredBottoms = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, bottoms: item ?? undefined })), []);
-  const handleCentredShoes   = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, shoes:   item ?? undefined })), []);
+  // ── Stable callbacks per row ──────────────────────────────────────────────
+  const setCentredTops    = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, tops:    item ?? undefined })), []);
+  const setCentredBottoms = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, bottoms: item ?? undefined })), []);
+  const setCentredShoes   = useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, shoes:   item ?? undefined })), []);
   const centredHandlers: Record<RowKey, (item: ClothingItem | null) => void> = {
-    tops: handleCentredTops, bottoms: handleCentredBottoms, shoes: handleCentredShoes,
+    tops: setCentredTops, bottoms: setCentredBottoms, shoes: setCentredShoes,
   };
 
-  const handleItemTap  = useCallback((item: ClothingItem) => setDetailsItem(item), []);
-  const handleAddClick = useCallback((cat: Category) => {
+  const handleItemTap   = useCallback((item: ClothingItem) => setDetailsItem(item), []);
+  const handleAddClick  = useCallback((cat: Category) => {
     if (canAddItem(totalItems)) setAddCategory(cat); else setUpgradeReason("items");
   }, [canAddItem, totalItems]);
 
-  // Stable per-key add handlers
   const handleAddTops    = useCallback(() => handleAddClick("tops"),    [handleAddClick]);
   const handleAddBottoms = useCallback(() => handleAddClick("bottoms"), [handleAddClick]);
   const handleAddShoes   = useCallback(() => handleAddClick("shoes"),   [handleAddClick]);
   const addHandlers: Record<RowKey, () => void> = {
     tops: handleAddTops, bottoms: handleAddBottoms, shoes: handleAddShoes,
   };
-  const handleSaveClick     = useCallback(() => {
+
+  const handleSaveClick = useCallback(() => {
     if (canSaveOutfit(outfits.length)) setIsSaveOpen(true); else setUpgradeReason("outfits");
   }, [canSaveOutfit, outfits.length]);
+
   const handleMannequinClick = useCallback(() => {
     if (caps.mannequin) setShowMannequin(true); else setShowPremium(true);
   }, [caps.mannequin]);
+
   const handleShuffle = useCallback(() => {
     ROWS.forEach(({ key }, i) => {
       const data = rowData[key];
@@ -198,28 +267,26 @@ export default function WardrobePage() {
       }, i * 80);
     });
   }, [rowData]);
+
   const handleSave = () => {
     if (!saveName.trim()) return;
     if (!canSaveOutfit(outfits.length)) { setIsSaveOpen(false); setSaveName(""); setUpgradeReason("outfits"); return; }
     const itemIds = Object.values(centred).filter((i): i is ClothingItem => i != null).map(i => i.id);
     saveOutfit.mutate(
       { data: { name: saveName.trim(), itemIds } },
-      { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() }); setIsSaveOpen(false); setSaveName(""); } }
+      { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() }); setIsSaveOpen(false); setSaveName(""); } },
     );
   };
 
-  const canSave     = ROWS.every(({ key }) => !!centred[key]);
-  const isFree      = tier === "free";
-  const outfitsLeft = isFree ? Math.max(0, FREE_OUTFIT_LIMIT - outfits.length) : null;
-  const itemsLeft   = isFree ? Math.max(0, FREE_ITEM_LIMIT  - totalItems)      : null;
-  const ready       = ir.width > 0;
+  const canSave    = ROWS.every(({ key }) => !!centred[key]);
+  const isFree     = tier === "free";
+  const itemsLeft  = isFree ? Math.max(0, FREE_ITEM_LIMIT  - totalItems)      : null;
+  const ready      = ir.width > 0;
 
-  // Inner content width (between doors) in px
-  const innerLeft  = pW(ir, LM.doorL);
-  const innerRight = pW(ir, 1 - LM.doorR);
-  const innerWidth = ir.width - innerLeft - innerRight;
+  // Inner width between doors
+  const innerW = pW(ir, LM.doorR - LM.doorL);
 
-  // Per-row card dimensions derived from rendered image height
+  // Per-row card dimensions from rendered image height
   const rowSizes = LM.rows.map(lm => {
     const carH  = pH(ir, lm.carBot - lm.carY);
     const hH    = Math.min(18, Math.max(8, Math.round(carH * 0.155)));
@@ -228,84 +295,80 @@ export default function WardrobePage() {
     return { carH, hH, cardH, cardW };
   });
 
-  // Bottom bar pixel measurements
-  const barH        = pH(ir, LM.barBot - LM.barY);
-  const barFontSize = Math.max(10, Math.round(barH * 0.36));
+  // Container = screen minus bottom nav; image clips from the bottom (rug area)
+  const containerH = `calc(100dvh - ${NAV_H}px)`;
 
   return (
     <div
       ref={containerRef}
       style={{
         position: "relative",
-        height: `calc(100dvh - ${NAV_H}px)`,
+        width: "100%",
+        height: containerH,
         overflow: "hidden",
-        background: "#f5e8c0",   // warm fallback while image loads
+        background: "#f5e8c0",
       }}
     >
-      {/* ── Full-screen background image ── */}
+      {/* ── Background image — fills full width, clips from the bottom ── */}
+      {/*    width: 100% → no horizontal letterboxing                      */}
       <img
         src="/closet-bg.png"
         alt=""
         aria-hidden="true"
         style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "contain", objectPosition: "center top",
-          pointerEvents: "none", userSelect: "none", zIndex: 0,
           display: "block",
+          position: "absolute",
+          top: 0, left: 0,
+          width: "100%",
+          height: "auto",          // natural proportional height (taller than container)
+          pointerEvents: "none",
+          userSelect: "none",
+          zIndex: 0,
         }}
       />
 
-      {/* ── All interactive overlays — rendered only once image rect is known ── */}
+      {/* ── Overlays — rendered once image rect is computed ── */}
       {ready && (
         <>
-          {/* ── Badge tap zone — image provides visual; only flash a warning when full ── */}
+          {/* ── Item count badge — transparent tap zone; red ring when full ── */}
           <button
             onClick={() => setUpgradeReason("items")}
             data-testid="badge-item-count"
+            aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items`}
             style={{
               position: "absolute",
               top: pY(ir, LM.badgeCY) - pH(ir, 0.015),
               left: "50%", transform: "translateX(-50%)",
               zIndex: 12,
-              minWidth: pW(ir, 0.30), height: pH(ir, 0.030),
+              minWidth: pW(ir, 0.28), height: pH(ir, 0.028),
               borderRadius: 20, border: "none",
-              // transparent normally; red ring when at limit
-              background: itemsLeft === 0 ? "rgba(200,40,40,0.15)" : "transparent",
-              boxShadow: itemsLeft === 0 ? "0 0 0 2px rgba(200,40,40,0.45)" : "none",
+              background: itemsLeft === 0 ? "rgba(200,40,40,0.12)" : "transparent",
+              boxShadow: itemsLeft === 0 ? "0 0 0 2px rgba(200,40,40,0.40)" : "none",
               cursor: "pointer",
             }}
-            aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used`}
           />
 
-          {/* ── Three clothing rows ── */}
-          {ROWS.map(({ key, addLabel }, rowIdx) => {
+          {/* ── Three section rows ── */}
+          {ROWS.map(({ key, addLabel, btnLabel }, rowIdx) => {
             const lm    = LM.rows[rowIdx];
             const items = rowData[key];
             const { carH, hH, cardH, cardW } = rowSizes[rowIdx];
-
-            // pixel positions of this row's elements
-            const addBtnTop = pY(ir, lm.addY);
-            const addBtnH   = pH(ir, lm.carY - lm.addY);
-            const carTop    = pY(ir, lm.carY);
+            const carTop  = pY(ir, lm.carY);
+            const doorLpx = pX(ir, LM.doorL);
+            const doorRpx = pX(ir, LM.doorR);
 
             return (
               <React.Fragment key={key}>
-                {/* ── "+ Add" tap zone — fully transparent; image provides all text/visual ── */}
-                <button
-                  onClick={() => handleAddClick(key as Category)}
-                  aria-label={addLabel}
+                {/* ── Large pink pill "+ ADD" button — always visible ── */}
+                <SectionBtn
+                  label={btnLabel}
+                  ir={ir}
+                  rodCY={lm.rodCY}
+                  onClick={addHandlers[key]}
                   data-testid={`add-btn-${key}`}
-                  style={{
-                    position: "absolute",
-                    top: addBtnTop, left: pX(ir, LM.doorL), right: pW(ir, 1 - LM.doorR),
-                    height: Math.max(24, addBtnH),
-                    zIndex: 12,
-                    background: "transparent", border: "none", cursor: "pointer",
-                  }}
                 />
 
-                {/* ── Clothing carousel — replaces image's ghost hanger placeholders ── */}
+                {/* ── Carousel row ── */}
                 <div
                   data-testid={`row-${key}`}
                   style={{
@@ -313,14 +376,13 @@ export default function WardrobePage() {
                     top: carTop, left: 0, right: 0,
                     height: carH,
                     zIndex: 11,
-                    display: "flex", alignItems: "center",
                   }}
                 >
-                  {/* Pink chevrons */}
+                  {/* Pink chevrons — only when items exist */}
                   {items.length > 0 && (
                     <>
-                      <div style={{ position:"absolute", left: innerLeft - 3, top:"50%", transform:"translateY(-50%)", fontSize: Math.max(16, Math.round(carH * 0.38)), color:PINK, fontWeight:300, lineHeight:1, pointerEvents:"none", userSelect:"none", opacity:0.85, zIndex:13 }}>‹</div>
-                      <div style={{ position:"absolute", right: innerRight - 3, top:"50%", transform:"translateY(-50%)", fontSize: Math.max(16, Math.round(carH * 0.38)), color:PINK, fontWeight:300, lineHeight:1, pointerEvents:"none", userSelect:"none", opacity:0.85, zIndex:13 }}>›</div>
+                      <div style={{ position:"absolute", left: doorLpx - 4, top:"50%", transform:"translateY(-50%)", fontSize: Math.max(18, Math.round(carH * 0.40)), color:PINK, fontWeight:300, lineHeight:1, pointerEvents:"none", userSelect:"none", opacity:0.9, zIndex:13 }}>‹</div>
+                      <div style={{ position:"absolute", right: pW(ir, 1 - LM.doorR) - 4, top:"50%", transform:"translateY(-50%)", fontSize: Math.max(18, Math.round(carH * 0.40)), color:PINK, fontWeight:300, lineHeight:1, pointerEvents:"none", userSelect:"none", opacity:0.9, zIndex:13 }}>›</div>
                     </>
                   )}
 
@@ -340,115 +402,137 @@ export default function WardrobePage() {
               </React.Fragment>
             );
           })}
-
-          {/* ── Bottom action bar ── */}
-          <div
-            style={{
-              position: "absolute",
-              top: pY(ir, LM.barY),
-              left: ir.left,
-              width: ir.width,
-              height: barH,
-              zIndex: 15,
-            }}
-          >
-            {/* Shuffle — transparent hit-zone over image's hanger icon */}
-            <button
-              onClick={handleShuffle}
-              data-testid="button-shuffle"
-              title="Shuffle outfit"
-              style={{
-                position: "absolute",
-                top: "50%", transform: "translateY(-50%)",
-                left: pW(ir, LM.hangerCX) - 20,
-                width: 40, height: 40,
-                borderRadius: "50%",
-                background: "transparent", border: "none",
-                cursor: "pointer",
-              }}
-            />
-
-            {/* Save Outfit — transparent hit zone + rename input when open */}
-            <AnimatePresence mode="wait">
-              {isSaveOpen ? (
-                /* Name input floats above the bar */
-                <motion.div
-                  key="input"
-                  initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:6 }}
-                  style={{
-                    position: "absolute",
-                    bottom: barH + 8, left: innerLeft, right: innerRight,
-                    display: "flex", gap: 6, zIndex: 20,
-                  }}
-                >
-                  <input
-                    autoFocus type="text"
-                    placeholder="Name this outfit…"
-                    value={saveName}
-                    onChange={e => setSaveName(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSave()}
-                    data-testid="input-outfit-name"
-                    style={{ flex:1, height:36, borderRadius:20, padding:"0 14px", fontSize:13, fontWeight:600, color:"#3a2400", background:"rgba(255,252,245,0.97)", border:"1.5px solid rgba(196,155,42,0.45)", boxShadow:"0 3px 12px rgba(0,0,0,0.14)", outline:"none" }}
-                  />
-                  <button onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
-                    style={{ width:36, height:36, borderRadius:"50%", flexShrink:0, background:"rgba(255,250,240,0.97)", border:"1.5px solid rgba(196,155,42,0.36)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(0,0,0,0.10)", cursor:"pointer" }}>
-                    <X style={{ width:14, height:14, color:GOLD }} />
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={!saveName.trim() || saveOutfit.isPending}
-                    data-testid="button-save-outfit-confirm"
-                    style={{ padding:"0 16px", height:36, borderRadius:20, flexShrink:0, background:"linear-gradient(to bottom,#f5d840,#c89018)", color:"#3a2400", fontWeight:700, fontSize:13, border:"none", boxShadow:"0 3px 10px rgba(200,168,24,0.32)", opacity:(!saveName.trim()||saveOutfit.isPending)?0.42:1, cursor:"pointer" }}
-                  >
-                    {saveOutfit.isPending ? "…" : "Save ♡"}
-                  </button>
-                </motion.div>
-              ) : (
-                /* Transparent tap zone over image's SAVE OUTFIT button */
-                <motion.button
-                  key="save"
-                  initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-                  onClick={canSave ? handleSaveClick : undefined}
-                  data-testid="button-save-outfit"
-                  style={{
-                    position: "absolute",
-                    top: "50%", transform: "translateY(-50%)",
-                    left: pW(ir, LM.saveBtnL), right: pW(ir, 1 - LM.saveBtnR),
-                    height: barH * 0.70,
-                    borderRadius: 20,
-                    background: "transparent",
-                    border: "none",
-                    cursor: canSave ? "pointer" : "default",
-                    // Subtle glow ring when outfit is completeable
-                    boxShadow: canSave ? `0 0 0 2px rgba(196,155,42,0.35), 0 3px 12px rgba(200,168,24,0.25)` : "none",
-                  }}
-                  aria-label="Save Outfit"
-                />
-              )}
-            </AnimatePresence>
-
-            {/* Mannequin — transparent hit-zone */}
-            <button
-              onClick={handleMannequinClick}
-              disabled={!canSave}
-              data-testid="button-view-mannequin"
-              title="View on mannequin"
-              style={{
-                position: "absolute",
-                top: "50%", transform: "translateY(-50%)",
-                left: pW(ir, LM.manneCX) - 20,
-                width: 40, height: 40,
-                borderRadius: "50%",
-                background: "transparent", border: "none",
-                cursor: canSave ? "pointer" : "default",
-                opacity: canSave ? 1 : 0.30,
-              }}
-            />
-          </div>
         </>
       )}
 
-      {/* ── Modal overlays ── */}
+      {/* ── Bottom action bar — HTML-rendered, pinned to container bottom ── */}
+      {/* Full-width backdrop for visual cleanliness on all screen widths */}
+      <div style={{ position:"absolute", bottom:0, left:0, right:0, height:BAR_H, zIndex:19,
+        background:"linear-gradient(to bottom, rgba(248,240,220,0.97) 0%, rgba(242,230,198,0.99) 100%)",
+        borderTop:"1px solid rgba(196,155,42,0.25)", boxShadow:"0 -2px 10px rgba(0,0,0,0.07)" }} />
+
+      {/* Bar contents — aligned to image rect (handles SE letterboxing) */}
+      {ready && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: ir.left,
+            width: ir.width,
+            height: BAR_H,
+            zIndex: 20,
+          }}
+        >
+          {/* Shuffle (hanger) — left-side icon */}
+          <button
+            onClick={handleShuffle}
+            data-testid="button-shuffle"
+            title="Shuffle outfit"
+            style={{
+              position: "absolute",
+              left: pW(ir, LM.hangerCX) - 22,
+              top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44,
+              borderRadius: "50%",
+              background: "rgba(255,248,240,0.85)",
+              border: "1.2px solid rgba(196,155,42,0.30)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            <HangerIcon size={22} />
+          </button>
+
+          {/* Save Outfit — centre */}
+          <AnimatePresence mode="wait">
+            {isSaveOpen ? (
+              <motion.div
+                key="input"
+                initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:4 }}
+                style={{
+                  position: "absolute",
+                  bottom: BAR_H + 8,
+                  left: pW(ir, LM.saveBtnL),
+                  right: pW(ir, 1 - LM.saveBtnR),
+                  display: "flex", gap: 6, zIndex: 22,
+                }}
+              >
+                <input
+                  autoFocus type="text"
+                  placeholder="Name this outfit…"
+                  value={saveName}
+                  onChange={e => setSaveName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSave()}
+                  data-testid="input-outfit-name"
+                  style={{ flex:1, height:38, borderRadius:20, padding:"0 14px", fontSize:13, fontWeight:600, color:"#3a2400", background:"rgba(255,252,245,0.98)", border:"1.5px solid rgba(196,155,42,0.50)", boxShadow:"0 3px 12px rgba(0,0,0,0.14)", outline:"none" }}
+                />
+                <button onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
+                  style={{ width:38, height:38, borderRadius:"50%", flexShrink:0, background:"rgba(255,250,240,0.97)", border:"1.5px solid rgba(196,155,42,0.36)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
+                  <X style={{ width:14, height:14, color:GOLD }} />
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!saveName.trim() || saveOutfit.isPending}
+                  data-testid="button-save-outfit-confirm"
+                  style={{ padding:"0 16px", height:38, borderRadius:20, flexShrink:0, background:"linear-gradient(to bottom,#f5d840,#c89018)", color:"#3a2400", fontWeight:700, fontSize:13, border:"none", boxShadow:"0 3px 10px rgba(200,168,24,0.32)", opacity:(!saveName.trim()||saveOutfit.isPending)?0.42:1, cursor:"pointer" }}
+                >
+                  {saveOutfit.isPending ? "…" : "Save ♡"}
+                </button>
+              </motion.div>
+            ) : (
+              <motion.button
+                key="save"
+                initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+                onClick={handleSaveClick}
+                data-testid="button-save-outfit"
+                style={{
+                  position: "absolute",
+                  left: pW(ir, LM.saveBtnL),
+                  right: pW(ir, 1 - LM.saveBtnR),
+                  top: "50%", transform: "translateY(-50%)",
+                  height: 40, borderRadius: 20,
+                  background: canSave
+                    ? "linear-gradient(to bottom, #f8e860, #d4a010)"
+                    : "rgba(255,248,232,0.90)",
+                  border: `1.5px solid ${canSave ? "rgba(196,155,42,0.60)" : "rgba(196,155,42,0.35)"}`,
+                  boxShadow: canSave ? "0 3px 14px rgba(200,168,24,0.35)" : "0 1px 4px rgba(0,0,0,0.06)",
+                  color: "#3a2400", fontWeight: 800, fontSize: 14,
+                  letterSpacing: "0.06em", textTransform: "uppercase",
+                  fontFamily: "'Georgia', serif", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                }}
+                aria-label="Save Outfit"
+              >
+                SAVE OUTFIT ♡
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          {/* Mannequin — right-side icon */}
+          <button
+            onClick={handleMannequinClick}
+            disabled={!canSave}
+            data-testid="button-view-mannequin"
+            title="View on mannequin"
+            style={{
+              position: "absolute",
+              left: pW(ir, LM.manneCX) - 22,
+              top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44,
+              borderRadius: "50%",
+              background: "rgba(255,248,240,0.85)",
+              border: "1.2px solid rgba(196,155,42,0.30)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: canSave ? "pointer" : "default",
+              opacity: canSave ? 1 : 0.35,
+            }}
+          >
+            <MannequinIcon size={22} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Modals ── */}
       <AnimatePresence>
         {showMannequin && <MannequinView top={centred.tops} bottom={centred.bottoms} shoes={centred.shoes} onClose={() => setShowMannequin(false)} />}
       </AnimatePresence>
