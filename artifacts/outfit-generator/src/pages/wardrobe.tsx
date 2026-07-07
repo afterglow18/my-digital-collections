@@ -33,9 +33,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { QuickAddSheet } from "@/components/clothing/QuickAddSheet";
 import { ItemDetailsSheet } from "@/components/clothing/ItemDetailsSheet";
-import { MannequinView } from "@/components/MannequinView";
 import { UpgradeSheet, UpgradeReason } from "@/components/paywall/UpgradeSheet";
-import { PremiumSheet } from "@/components/paywall/PremiumSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT } from "@/lib/entitlements";
@@ -168,9 +166,7 @@ export default function WardrobePage() {
   const [centred,       setCentred]       = useState<Partial<Record<RowKey, ClothingItem>>>({});
   const [addCategory,   setAddCategory]   = useState<Category | null>(null);
   const [detailsItem,   setDetailsItem]   = useState<ClothingItem | null>(null);
-  const [showMannequin, setShowMannequin] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
-  const [showPremium,   setShowPremium]   = useState(false);
   const [isSaveOpen,    setIsSaveOpen]    = useState(false);
   const [saveName,      setSaveName]      = useState("");
 
@@ -226,8 +222,8 @@ export default function WardrobePage() {
   }, [canSaveOutfit, outfits.length]);
 
   const handleMannequinClick = useCallback(() => {
-    if (caps.mannequin) setShowMannequin(true); else setShowPremium(true);
-  }, [caps.mannequin]);
+    setUpgradeReason("items");
+  }, []);
 
   const handleShuffle = useCallback(() => {
     ROWS.forEach(({ key }, i) => {
@@ -580,20 +576,9 @@ export default function WardrobePage() {
 
       {/* ── Modals ── */}
       <AnimatePresence>
-        {showMannequin && (
-          <MannequinView
-            top={centred.tops} bottom={centred.bottoms} shoes={centred.shoes}
-            onClose={() => setShowMannequin(false)}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
         {upgradeReason && (
           <UpgradeSheet reason={upgradeReason} onClose={() => setUpgradeReason(null)} />
         )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showPremium && <PremiumSheet onClose={() => setShowPremium(false)} />}
       </AnimatePresence>
       <AnimatePresence>
         {addCategory && (
