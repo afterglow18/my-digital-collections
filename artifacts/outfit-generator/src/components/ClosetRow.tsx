@@ -183,10 +183,10 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
     // Photos are inset ~8% within each slot so there is breathing room between
     // images and equal whitespace on every side.  The inset is split evenly:
     // half on left/right (horizontal centering) and half as a top margin.
-    const GAP    = slotW * 0.08;         // total horizontal gap per slot
+    const GAP    = slotW * 0.06;         // total horizontal gap per slot (~6%)
     const inset  = GAP / 2;             // equal margin each side
-    const photoW = slotW - GAP;         // ~92% of slot width
-    const photoH = photoW * (4 / 3);    // strict 3:4 portrait ratio
+    const photoW = slotW - GAP;         // ~94% of slot width
+    const photoH = photoW * 1.5;        // 3:2 portrait — ~13% taller than 4:3
 
     // Center item gets a thin soft-pink outline; left/right items are borderless.
     const CENTER_BORDER = "1.5px solid #F7C6D8";
@@ -274,7 +274,7 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                     pointerEvents: "none",
                     padding: 0,
                     flexShrink: 0,
-                    marginTop: inset,  // equal top gap matches left/right inset
+                    marginTop: 2,      // minimal top gap — maximise visible photo height
                   }}
                 >
                   {item.imageObjectPath ? (
