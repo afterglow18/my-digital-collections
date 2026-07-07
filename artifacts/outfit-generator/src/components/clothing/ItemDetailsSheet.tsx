@@ -219,9 +219,16 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           Item Details
         </h2>
         <div className="flex items-center gap-2">
-          {/* Favourite toggle */}
+          {/* Favourite toggle — saves instantly */}
           <button
-            onClick={() => patch("isFavorite")(!form.isFavorite)}
+            onClick={() => {
+              const next = !form.isFavorite;
+              patch("isFavorite")(next);
+              updateItem.mutate(
+                { id: item.id, data: { isFavorite: next } },
+                { onSuccess: () => queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() }) }
+              );
+            }}
             className={`w-9 h-9 border-2 border-black rounded-full flex items-center justify-center transition-all
                         ${form.isFavorite
                           ? "bg-red-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"

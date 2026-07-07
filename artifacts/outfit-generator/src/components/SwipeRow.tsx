@@ -340,6 +340,7 @@ export const SwipeRow = forwardRef<SwipeRowHandle, SwipeRowProps>(
                       </span>
                     </div>
                   )}
+                  {/* Centred-item info dot */}
                   {i === centredIdx && (
                     <div
                       style={{
@@ -350,6 +351,20 @@ export const SwipeRow = forwardRef<SwipeRowHandle, SwipeRowProps>(
                       }}
                     >
                       <span style={{ color: "white", fontSize: 7, fontWeight: 700 }}>i</span>
+                    </div>
+                  )}
+                  {/* Favourite heart indicator */}
+                  {item.isFavorite && (
+                    <div
+                      style={{
+                        position: "absolute", top: 3, left: 3,
+                        width: 16, height: 16, borderRadius: "50%",
+                        background: "rgba(239,68,68,0.90)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 8, lineHeight: 1 }}>♥</span>
                     </div>
                   )}
                 </div>

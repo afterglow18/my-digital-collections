@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import WardrobePage from './pages/wardrobe';
 import GeneratePage from './pages/generate';
 import SavedPage from './pages/saved';
+import FavoritesPage from './pages/favorites';
 import WelcomePage from './pages/welcome';
 import { setGlobalTier } from '@/hooks/useEntitlements';
 
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/" component={WardrobePage} />
         <Route path="/generate" component={GeneratePage} />
         <Route path="/saved" component={SavedPage} />
+        <Route path="/favorites" component={FavoritesPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

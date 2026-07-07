@@ -23,6 +23,7 @@ import React, {
   useEffect, useRef, useState,
   useCallback, RefObject,
 } from "react";
+import { useLocation } from "wouter";
 import {
   useListClothing, getListClothingQueryKey,
   useSaveOutfit, useListOutfits, getListOutfitsQueryKey,
@@ -225,19 +226,7 @@ export default function WardrobePage() {
     setUpgradeReason("items");
   }, []);
 
-  const handleShuffle = useCallback(() => {
-    ROWS.forEach(({ key }, i) => {
-      const data = rowData[key];
-      if (data.length < 2) return;
-      const ref = rowRefs[key].current;
-      if (!ref) return;
-      const idx = Math.floor(Math.random() * data.length);
-      setTimeout(() => {
-        ref.scrollToIndex(data.length - 1, false);
-        setTimeout(() => ref.scrollToIndex(idx, true), 60);
-      }, i * 80);
-    });
-  }, [rowData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [, navigate] = useLocation();
 
   const handleSave = () => {
     if (!saveName.trim()) return;
@@ -444,12 +433,12 @@ export default function WardrobePage() {
               Visual (hanger icon, "SAVE OUTFIT ♡", dress-form icon) comes from the
               background image.  These HTML elements are invisible tap targets only. */}
 
-          {/* Shuffle / hanger icon — left circle */}
+          {/* Hanger icon — left circle → Favorites */}
           <button
-            onClick={handleShuffle}
-            data-testid="button-shuffle"
-            aria-label="Shuffle outfit"
-            title="Shuffle outfit"
+            onClick={() => navigate("/favorites")}
+            data-testid="button-favorites"
+            aria-label="View favorites"
+            title="Favorites"
             style={{
               position: "absolute",
               top:    pY(ir, LM.barY),
