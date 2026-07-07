@@ -584,7 +584,7 @@ export default function GeneratePage() {
                         fontFamily: "var(--font-display)",
                       }}
                     >
-                      Re-spin
+                      ✨ As If!
                     </button>
                     <button
                       onClick={() => setIsSaveOpen(true)}
