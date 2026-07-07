@@ -340,7 +340,7 @@ export default function WardrobePage() {
             // Photos must start BELOW the "+ ADD" button (tapBot) with a small
             // breathing gap.  We use Max() so the LM boxY is respected when it
             // already clears the button (e.g. on larger screens).
-            const GAP_PX  = 6;
+            const GAP_PX  = 2;
             const carTop  = Math.max(pY(ir, lm.boxY), tapBot + GAP_PX);
             const carH    = Math.max(0, pY(ir, lm.boxBot) - carTop);
 

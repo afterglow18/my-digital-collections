@@ -186,7 +186,9 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
     const GAP    = slotW * 0.06;         // total horizontal gap per slot (~6%)
     const inset  = GAP / 2;             // equal margin each side
     const photoW = slotW - GAP;         // ~94% of slot width
-    const photoH = photoW * 1.5;        // 3:2 portrait — ~13% taller than 4:3
+    // Clamp to available container height minus a 2 px bottom margin so photos
+    // are never clipped by the row container's overflow:hidden.
+    const photoH = Math.min(photoW * 1.5, containerH - 2);
 
     // Center item gets a thin soft-pink outline; left/right items are borderless.
     const CENTER_BORDER = "1.5px solid #F7C6D8";
