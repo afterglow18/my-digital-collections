@@ -494,10 +494,11 @@ export default function GeneratePage() {
                         ? "linear-gradient(to bottom, #f6db3a, #c98f12)"
                         : "rgba(210,185,100,0.32)",
                       color: "#2e1a00",
-                      fontWeight: 900,
+                      fontWeight: 800,
                       fontSize: 14,
-                      letterSpacing: "0.10em",
+                      letterSpacing: "-0.01em",
                       textTransform: "uppercase",
+                      whiteSpace: "nowrap",
                       boxShadow: hasItems ? "3px 3px 0 rgba(0,0,0,0.85)" : "none",
                       cursor: hasItems ? "pointer" : "default",
                       fontFamily: "var(--font-display)",
