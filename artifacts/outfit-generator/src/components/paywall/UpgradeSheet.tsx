@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEntitlements, PurchaseResult } from "@/hooks/useEntitlements";
 
-export type UpgradeReason = "items" | "outfits";
+export type UpgradeReason = "items" | "outfits" | "mannequin";
 
 interface Props {
   reason:  UpgradeReason;
@@ -28,6 +28,12 @@ const FEATURES = [
   { emoji: "💳",  text: "One-time purchase"         },
   { emoji: "🚫",  text: "No monthly subscription"  },
 ] as const;
+
+const SUBTITLES: Record<UpgradeReason, string> = {
+  items:     "Your free closet is full!",
+  outfits:   "You've hit the free outfit limit.",
+  mannequin: "A premium feature — unlock it once.",
+};
 
 export function UpgradeSheet({ reason, onClose }: Props) {
   const { purchase } = useEntitlements();
@@ -74,7 +80,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             Unlock Your<br />Unlimited<br />Digital Closet
           </h1>
           <p className="text-sm font-bold text-black/55 mt-2">
-            Your free closet is full!
+            {SUBTITLES[reason]}
           </p>
         </div>
 
@@ -118,8 +124,11 @@ export function UpgradeSheet({ reason, onClose }: Props) {
 
       </div>
 
-      {/* CTA footer */}
-      <div className="px-5 pb-8 pt-3 flex flex-col gap-3 flex-shrink-0">
+      {/* CTA footer — extra bottom padding clears iPhone home indicator */}
+      <div
+        className="px-5 pt-3 flex flex-col gap-3 flex-shrink-0"
+        style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}
+      >
         <button
           onClick={handlePurchase}
           disabled={status === "pending"}

@@ -223,7 +223,7 @@ export default function WardrobePage() {
   }, [canSaveOutfit, outfits.length]);
 
   const handleMannequinClick = useCallback(() => {
-    setUpgradeReason("items");
+    setUpgradeReason("mannequin");
   }, []);
 
   const [, navigate] = useLocation();
@@ -540,13 +540,12 @@ export default function WardrobePage() {
             )}
           </AnimatePresence>
 
-          {/* Mannequin / dress-form icon — right circle */}
+          {/* Mannequin / dress-form icon — right circle → always opens upgrade */}
           <button
             onClick={handleMannequinClick}
-            disabled={!canSave}
             data-testid="button-view-mannequin"
-            aria-label="View outfit on mannequin"
-            title="View on mannequin"
+            aria-label="Unlock mannequin view"
+            title="Unlock mannequin view"
             style={{
               position: "absolute",
               top:    pY(ir, LM.barY),
@@ -556,8 +555,7 @@ export default function WardrobePage() {
               zIndex: 14,
               background: "transparent",
               border: "none",
-              cursor: canSave ? "pointer" : "default",
-              opacity: canSave ? 1 : 0.35,
+              cursor: "pointer",
             }}
           />
           {/* ✨ sparkle next to mannequin icon */}
