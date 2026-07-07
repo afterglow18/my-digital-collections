@@ -29,7 +29,7 @@ import {
   useSaveOutfit, useListOutfits, getListOutfitsQueryKey,
   ClothingItem,
 } from "@workspace/api-client-react";
-import { X } from "lucide-react";
+import { X, Shuffle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { QuickAddSheet } from "@/components/clothing/QuickAddSheet";
@@ -93,26 +93,23 @@ const LM = {
     {
       btnCY:     0.781, // centre of "+ ADD SHOES" pill (rod y≈1200)
       boxY:      0.790, // just below SHOES rod (y≈1214) — no hangers hanging
-      boxBot:    0.896, // just above SAVE bar (y≈1377)
+      boxBot:    0.934, // extended — drawer area now painted over (y≈1435)
       hangerTop: 0.790,
       hangerBot: 0.800, // minimal overlay — only covers the rod bottom shadow
     },
   ],
 
-  // SAVE OUTFIT bar
-  barY:     0.898,
-  barBot:   0.973,
-  hangerCX: 0.140,
-  saveBtnL: 0.228,
-  saveBtnR: 0.772,
-  manneCX:  0.860,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────
-interface ImgRect { top: number; left: number; width: number; height: number }
+interface ImgRect {
+  top: number; left: number; width: number; height: number;
+  /** Full height of the positioning container (not just the rendered image). */
+  containerH: number;
+}
 
 function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
-  const [rect, setRect] = useState<ImgRect>({ top: 0, left: 0, width: 0, height: 0 });
+  const [rect, setRect] = useState<ImgRect>({ top: 0, left: 0, width: 0, height: 0, containerH: 0 });
   useEffect(() => {
     const compute = () => {
       const c = containerRef.current;
@@ -125,10 +122,10 @@ function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
         // Container wider than image: fill height, center horizontally
         rH = cH; rW = cH * iR; rT = 0; rL = (cW - rW) / 2;
       } else {
-        // Container taller than image (new wider image): fill width, anchor top
+        // Container taller than image: fill width, anchor top
         rW = cW; rH = cW / iR; rL = 0; rT = 0;
       }
-      setRect({ top: rT, left: rL, width: rW, height: rH });
+      setRect({ top: rT, left: rL, width: rW, height: rH, containerH: cH });
     };
     compute();
     window.addEventListener("resize", compute);
@@ -262,10 +259,9 @@ export default function WardrobePage() {
       style={{
         position: "relative",
         width: "100%",
-        // Constrain height so the image fills the container exactly (no letterbox gap).
-        // On portrait phones the image fills width at 1023:1537 ratio; use that height
-        // but never exceed the available viewport above the nav bar.
-        height: `min(calc(100dvh - ${NAV_H}px), calc(100vw * ${(IMG_H / IMG_W).toFixed(6)}))`,
+        // Full viewport height above the nav bar. The image fills width (~586 px on
+        // a 390-wide phone) and the remaining floor space below it holds the save bar.
+        height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
         // Door-yellow background blends with yellow doors visible at sides/bottom
         background: "#F0C030",
@@ -410,135 +406,144 @@ export default function WardrobePage() {
             );
           })}
 
-          {/* ── SAVE OUTFIT bar — transparent tap zones ── */}
-
-          {/* Shuffle / hanger icon */}
-          <button
-            onClick={handleShuffle}
-            data-testid="button-shuffle"
-            aria-label="Shuffle outfit"
-            title="Shuffle outfit"
+          {/* ── SAVE OUTFIT bar — sits in the floor zone below the image ──
+              The baked-in drawer graphic has been painted out of closet-bg.png,
+              so these are real visible buttons (not transparent tap zones).
+              Positioned at ir.height + 8 so they land on the yellow floor/rug area. */}
+          <div
             style={{
               position: "absolute",
-              top:   pY(ir, LM.barY),
-              left:  pX(ir, LM.hangerCX) - 26,
-              width: 52,
-              height: pH(ir, LM.barBot - LM.barY),
+              // Portrait: land in floor zone below image. Landscape/wide: clamp so bar
+            // stays inside the container (image fills full height, no floor zone).
+            top:   Math.min(ir.top + ir.height + 8, ir.containerH - 56),
+              left:  pX(ir, LM.doorL),
+              right: ir.left + pW(ir, 1 - LM.doorR),
+              height: 48,
               zIndex: 14,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
-          />
+          >
+            {/* Shuffle — left circle */}
+            <button
+              onClick={handleShuffle}
+              data-testid="button-shuffle"
+              aria-label="Shuffle outfit"
+              title="Shuffle outfit"
+              style={{
+                width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                background: "rgba(255,248,230,0.97)",
+                border: "1.5px solid rgba(196,155,42,0.52)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <Shuffle style={{ width: 18, height: 18, color: GOLD }} />
+            </button>
 
-          {/* Save Outfit */}
-          <AnimatePresence mode="wait">
-            {isSaveOpen ? (
-              <motion.div
-                key="input"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                style={{
-                  position: "absolute",
-                  bottom: `calc(100% - ${pY(ir, LM.barY)}px + 8px)`,
-                  left:  pX(ir, LM.saveBtnL),
-                  right: ir.left + pW(ir, 1 - LM.saveBtnR),
-                  display: "flex",
-                  gap: 6,
-                  zIndex: 20,
-                }}
-              >
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Name this outfit…"
-                  value={saveName}
-                  onChange={e => setSaveName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSave()}
-                  data-testid="input-outfit-name"
-                  style={{
-                    flex: 1, height: 38, borderRadius: 20, padding: "0 14px",
-                    fontSize: 13, fontWeight: 600, color: "#3a2400",
-                    background: "rgba(255,252,245,0.98)",
-                    border: "1.5px solid rgba(196,155,42,0.50)",
-                    boxShadow: "0 3px 12px rgba(0,0,0,0.14)",
-                    outline: "none",
-                  }}
-                />
-                <button
-                  onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
-                  style={{
-                    width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
-                    background: "rgba(255,250,240,0.97)",
-                    border: "1.5px solid rgba(196,155,42,0.36)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <X style={{ width: 14, height: 14, color: GOLD }} />
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={!saveName.trim() || saveOutfit.isPending}
-                  data-testid="button-save-outfit-confirm"
-                  style={{
-                    padding: "0 16px", height: 38, borderRadius: 20, flexShrink: 0,
-                    background: "linear-gradient(to bottom,#f5d840,#c89018)",
-                    color: "#3a2400", fontWeight: 700, fontSize: 13, border: "none",
-                    boxShadow: "0 3px 10px rgba(200,168,24,0.32)",
-                    opacity: (!saveName.trim() || saveOutfit.isPending) ? 0.42 : 1,
-                    cursor: "pointer",
-                  }}
-                >
-                  {saveOutfit.isPending ? "…" : "Save ♡"}
-                </button>
-              </motion.div>
-            ) : (
-              <button
-                key="save-zone"
-                onClick={handleSaveClick}
-                data-testid="button-save-outfit"
-                aria-label="Save Outfit"
-                style={{
-                  position: "absolute",
-                  top:   pY(ir, LM.barY),
-                  left:  pX(ir, LM.saveBtnL),
-                  right: ir.left + pW(ir, 1 - LM.saveBtnR),
-                  height: pH(ir, LM.barBot - LM.barY),
-                  zIndex: 14,
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  borderRadius: 20,
-                  boxShadow: canSave
-                    ? "0 0 0 2.5px rgba(196,155,42,0.55), 0 4px 16px rgba(200,168,24,0.28)"
-                    : "none",
-                }}
-              />
-            )}
-          </AnimatePresence>
+            {/* Save Outfit — expands to fill remaining space */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <AnimatePresence mode="wait">
+                {isSaveOpen ? (
+                  <motion.div
+                    key="input"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    style={{ display: "flex", gap: 6, width: "100%" }}
+                  >
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Name this outfit…"
+                      value={saveName}
+                      onChange={e => setSaveName(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleSave()}
+                      data-testid="input-outfit-name"
+                      style={{
+                        flex: 1, height: 48, borderRadius: 24, padding: "0 14px",
+                        fontSize: 13, fontWeight: 600, color: "#3a2400",
+                        background: "rgba(255,252,245,0.98)",
+                        border: "1.5px solid rgba(196,155,42,0.50)",
+                        boxShadow: "0 3px 12px rgba(0,0,0,0.14)",
+                        outline: "none", minWidth: 0,
+                      }}
+                    />
+                    <button
+                      onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
+                      style={{
+                        width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                        background: "rgba(255,250,240,0.97)",
+                        border: "1.5px solid rgba(196,155,42,0.36)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <X style={{ width: 14, height: 14, color: GOLD }} />
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={!saveName.trim() || saveOutfit.isPending}
+                      data-testid="button-save-outfit-confirm"
+                      style={{
+                        padding: "0 16px", height: 48, borderRadius: 24, flexShrink: 0,
+                        background: "linear-gradient(to bottom,#f5d840,#c89018)",
+                        color: "#3a2400", fontWeight: 700, fontSize: 13, border: "none",
+                        boxShadow: "0 3px 10px rgba(200,168,24,0.32)",
+                        opacity: (!saveName.trim() || saveOutfit.isPending) ? 0.42 : 1,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {saveOutfit.isPending ? "…" : "Save ♡"}
+                    </button>
+                  </motion.div>
+                ) : (
+                  <button
+                    key="save-zone"
+                    onClick={handleSaveClick}
+                    data-testid="button-save-outfit"
+                    aria-label="Save Outfit"
+                    style={{
+                      width: "100%", height: 48, borderRadius: 24,
+                      background: "rgba(255,248,230,0.97)",
+                      border: "1.5px solid rgba(196,155,42,0.52)",
+                      color: "#5a3a00", fontWeight: 700, fontSize: 13,
+                      letterSpacing: "0.07em",
+                      cursor: "pointer",
+                      boxShadow: canSave
+                        ? "0 0 0 2.5px rgba(196,155,42,0.55), 0 4px 16px rgba(200,168,24,0.28)"
+                        : "0 2px 8px rgba(0,0,0,0.14)",
+                    }}
+                  >
+                    SAVE OUTFIT ♡
+                  </button>
+                )}
+              </AnimatePresence>
+            </div>
 
-          {/* Mannequin / dress-form icon */}
-          <button
-            onClick={handleMannequinClick}
-            disabled={!canSave}
-            data-testid="button-view-mannequin"
-            aria-label="View outfit on mannequin"
-            title="View on mannequin"
-            style={{
-              position: "absolute",
-              top:   pY(ir, LM.barY),
-              left:  pX(ir, LM.manneCX) - 26,
-              width: 52,
-              height: pH(ir, LM.barBot - LM.barY),
-              zIndex: 14,
-              background: "transparent",
-              border: "none",
-              cursor: canSave ? "pointer" : "default",
-              opacity: canSave ? 1 : 0.32,
-            }}
-          />
+            {/* Mannequin — right circle */}
+            <button
+              onClick={handleMannequinClick}
+              disabled={!canSave}
+              data-testid="button-view-mannequin"
+              aria-label="View outfit on mannequin"
+              title="View on mannequin"
+              style={{
+                width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                background: "rgba(255,248,230,0.97)",
+                border: "1.5px solid rgba(196,155,42,0.52)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
+                cursor: canSave ? "pointer" : "default",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                opacity: canSave ? 1 : 0.32,
+                fontSize: "1.25rem",
+              }}
+            >
+              👗
+            </button>
+          </div>
         </>
       )}
 
