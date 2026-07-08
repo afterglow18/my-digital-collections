@@ -563,22 +563,6 @@ export default function WardrobePage() {
               cursor: "pointer",
             }}
           />
-          {/* ✨ sparkle next to mannequin icon */}
-          <span
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              top:    pY(ir, LM.barY) + pH(ir, LM.barBot - LM.barY) * 0.5 - 9,
-              left:   pX(ir, LM.manneCX) + 30,
-              zIndex: 15,
-              fontSize: 14,
-              lineHeight: 1,
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-          >
-            ✨
-          </span>
         </>
       )}
 
