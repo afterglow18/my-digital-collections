@@ -1,4 +1,5 @@
 import { pgTable, text, serial, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { usersTable } from "./users";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -26,6 +27,7 @@ export const clothingItemsTable = pgTable("clothing_items", {
   purchasePrice: text("purchase_price"),
   purchaseDate: text("purchase_date"),
   notes: text("notes"),
+  userId: integer("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   isFavorite: boolean("is_favorite").notNull().default(false),
   timesWorn: integer("times_worn").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

@@ -7,7 +7,9 @@ import GeneratePage from './pages/generate';
 import SavedPage from './pages/saved';
 import FavoritesPage from './pages/favorites';
 import WelcomePage from './pages/welcome';
+import AuthPage from './pages/auth';
 import { setGlobalTier } from '@/hooks/useEntitlements';
+import { AuthProvider, useAuthContext } from '@/context/AuthContext';
 import { queryClient } from '@/lib/queryClient';
 
 function NotFound() {
@@ -33,9 +35,9 @@ function Router() {
   );
 }
 
-function App() {
-  // Show the welcome screen once per session. The wardrobe pre-loads beneath
-  // the overlay so the transition after the door animation is instant.
+function AppShell() {
+  const { state } = useAuthContext();
+
   const [entered, setEntered] = useState<boolean>(
     () =>
       sessionStorage.getItem("closet-entered") === "1" ||
@@ -47,8 +49,13 @@ function App() {
     setEntered(true);
   }, []);
 
-  // While the welcome overlay is visible, make the underlying app content
-  // inert so keyboard users cannot focus hidden controls behind the doors.
+  // Reset entered when user logs out
+  useEffect(() => {
+    if (state.status === 'unauthenticated') {
+      setEntered(false);
+    }
+  }, [state.status]);
+
   const routerWrapRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = routerWrapRef.current;
@@ -63,9 +70,6 @@ function App() {
   }, [entered]);
 
   // ── Stripe success callback ──────────────────────────────────────────────────
-  // When Stripe redirects back with ?unlock=success&session_id=..., verify the
-  // payment server-side before granting access.  The URL params are cleaned up
-  // immediately so refreshing doesn't re-trigger the verification.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const unlock = params.get("unlock");
@@ -73,36 +77,53 @@ function App() {
 
     if (unlock !== "success" || !sessionId) return;
 
-    // Clean the URL immediately — don't wait for server response.
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("unlock");
     cleanUrl.searchParams.delete("session_id");
     window.history.replaceState({}, "", cleanUrl.toString());
 
-    // Skip past the welcome screen so the user lands in the wardrobe.
     sessionStorage.setItem("closet-entered", "1");
     setEntered(true);
 
-    // Verify with the server and grant tier upgrade.
     fetch(`/api/stripe/verify?session_id=${encodeURIComponent(sessionId)}`)
       .then((r) => r.json())
       .then(({ verified, product }: { verified: boolean; product: string | null }) => {
         if (verified && product === "unlock") setGlobalTier("unlock");
         if (verified && product === "premium") setGlobalTier("premium");
       })
-      .catch(() => {
-        // Silently ignore — user can contact support if payment isn't reflected.
-      });
+      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Still verifying stored token — show blank yellow screen (avoids flash)
+  if (state.status === 'loading') {
+    return <div style={{ position: 'fixed', inset: 0, background: '#F0C030' }} />;
+  }
+
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <div ref={routerWrapRef}>
+        <Router />
+      </div>
+
+      {/* Auth gate */}
+      {state.status === 'unauthenticated' && (
+        <AuthPage onAuthenticated={handleEnter} />
+      )}
+
+      {/* Welcome doors — shown after auth, once per session */}
+      {state.status === 'authenticated' && !entered && (
+        <WelcomePage onEnter={handleEnter} />
+      )}
+    </WouterRouter>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-        <div ref={routerWrapRef}>
-          <Router />
-        </div>
-        {!entered && <WelcomePage onEnter={handleEnter} />}
-      </WouterRouter>
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

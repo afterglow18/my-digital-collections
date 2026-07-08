@@ -1,5 +1,5 @@
 import express, { Router, type IRouter } from "express";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 import { GoogleGenAI } from "@google/genai";
 import { db, clothingItemsTable, savedOutfitsTable, outfitItemsTable, CLOTHING_CATEGORIES } from "@workspace/db";
 import {
@@ -11,6 +11,7 @@ import {
   DeleteClothingItemParams,
   GenerateOutfitBody,
 } from "@workspace/api-zod";
+import { requireAuth, type AuthRequest } from "../middleware/requireAuth.js";
 
 const router: IRouter = Router();
 
@@ -28,7 +29,6 @@ router.post("/clothing/validate-image", express.json({ limit: "4mb" }), async (r
   const baseUrl = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
 
   if (!apiKey || !baseUrl) {
-    // Fail open — if env vars not set, allow the upload
     res.json({ isClothing: true, reason: "Validation unavailable (no API key)" });
     return;
   }
@@ -62,15 +62,12 @@ Reply with a JSON object (no markdown, no code fences) with exactly two keys:
     });
 
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-
-    // Parse the JSON response — strip any accidental markdown fences
     const cleaned = text.replace(/```[a-z]*\n?/gi, "").trim();
     let parsed: { isClothing: boolean; reason: string };
 
     try {
       parsed = JSON.parse(cleaned);
     } catch {
-      // If Gemini didn't return valid JSON, fail open
       res.json({ isClothing: true, reason: "Could not parse model response" });
       return;
     }
@@ -81,36 +78,35 @@ Reply with a JSON object (no markdown, no code fences) with exactly two keys:
     });
   } catch (err) {
     console.error("Gemini clothing validation error:", err);
-    // Fail open on unexpected errors so a Gemini outage doesn't block uploads
     res.json({ isClothing: true, reason: "Validation service error" });
   }
 });
 
-router.get("/clothing", async (req, res): Promise<void> => {
+router.get("/clothing", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const parsed = ListClothingQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
-  let items;
-  if (parsed.data.category) {
-    items = await db
-      .select()
-      .from(clothingItemsTable)
-      .where(eq(clothingItemsTable.category, parsed.data.category))
-      .orderBy(desc(clothingItemsTable.createdAt));
-  } else {
-    items = await db
-      .select()
-      .from(clothingItemsTable)
-      .orderBy(desc(clothingItemsTable.createdAt));
-  }
+  const items = parsed.data.category
+    ? await db
+        .select()
+        .from(clothingItemsTable)
+        .where(and(eq(clothingItemsTable.userId, userId), eq(clothingItemsTable.category, parsed.data.category)))
+        .orderBy(desc(clothingItemsTable.createdAt))
+    : await db
+        .select()
+        .from(clothingItemsTable)
+        .where(eq(clothingItemsTable.userId, userId))
+        .orderBy(desc(clothingItemsTable.createdAt));
 
   res.json(items);
 });
 
-router.post("/clothing", async (req, res): Promise<void> => {
+router.post("/clothing", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const parsed = CreateClothingItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -120,6 +116,7 @@ router.post("/clothing", async (req, res): Promise<void> => {
   const [item] = await db
     .insert(clothingItemsTable)
     .values({
+      userId,
       name: parsed.data.name,
       category: parsed.data.category,
       imageObjectPath: parsed.data.imageObjectPath ?? null,
@@ -138,8 +135,12 @@ router.post("/clothing", async (req, res): Promise<void> => {
   res.status(201).json(item);
 });
 
-router.get("/clothing/stats", async (req, res): Promise<void> => {
-  const allItems = await db.select().from(clothingItemsTable);
+router.get("/clothing/stats", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
+  const allItems = await db
+    .select()
+    .from(clothingItemsTable)
+    .where(eq(clothingItemsTable.userId, userId));
 
   const byCategory = CLOTHING_CATEGORIES.map((cat) => ({
     category: cat,
@@ -150,7 +151,8 @@ router.get("/clothing/stats", async (req, res): Promise<void> => {
 
   const [outfitCountResult] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(savedOutfitsTable);
+    .from(savedOutfitsTable)
+    .where(eq(savedOutfitsTable.userId, userId));
 
   res.json({
     total: allItems.length,
@@ -160,24 +162,22 @@ router.get("/clothing/stats", async (req, res): Promise<void> => {
   });
 });
 
-router.post("/clothing/generate-outfit", async (req, res): Promise<void> => {
+router.post("/clothing/generate-outfit", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const parsed = GenerateOutfitBody.safeParse(req.body ?? {});
 
-  const allItems = await db.select().from(clothingItemsTable);
+  const allItems = await db
+    .select()
+    .from(clothingItemsTable)
+    .where(eq(clothingItemsTable.userId, userId));
 
   const excludeCategories = parsed.success ? (parsed.data.excludeCategories ?? []) : [];
+  const activeCategories = CLOTHING_CATEGORIES.filter((cat) => !excludeCategories.includes(cat));
 
-  const activeCategories = CLOTHING_CATEGORIES.filter(
-    (cat) => !excludeCategories.includes(cat)
-  );
-
-  // Group items by category
   const byCategory: Record<string, typeof allItems> = {};
   for (const cat of activeCategories) {
     const catItems = allItems.filter((i) => i.category === cat);
-    if (catItems.length > 0) {
-      byCategory[cat] = catItems;
-    }
+    if (catItems.length > 0) byCategory[cat] = catItems;
   }
 
   if (Object.keys(byCategory).length === 0) {
@@ -185,7 +185,6 @@ router.post("/clothing/generate-outfit", async (req, res): Promise<void> => {
     return;
   }
 
-  // Pick one random item per available category (top, bottom, shoes are preferred)
   const preferredOrder = ["tops", "bottoms", "shoes", "outerwear", "dresses", "accessories"];
   const outfitItems: typeof allItems = [];
 
@@ -194,10 +193,7 @@ router.post("/clothing/generate-outfit", async (req, res): Promise<void> => {
       const catItems = byCategory[cat];
       const picked = catItems[Math.floor(Math.random() * catItems.length)];
       outfitItems.push(picked);
-
-      // If we picked a dress, skip tops and bottoms
       if (cat === "dresses") break;
-      // Skip outerwear if we have enough items already
       if (outfitItems.length >= 4 && cat === "outerwear") continue;
     }
   }
@@ -205,7 +201,8 @@ router.post("/clothing/generate-outfit", async (req, res): Promise<void> => {
   res.json({ items: outfitItems });
 });
 
-router.get("/clothing/:id", async (req, res): Promise<void> => {
+router.get("/clothing/:id", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const params = GetClothingItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -215,7 +212,7 @@ router.get("/clothing/:id", async (req, res): Promise<void> => {
   const [item] = await db
     .select()
     .from(clothingItemsTable)
-    .where(eq(clothingItemsTable.id, params.data.id));
+    .where(and(eq(clothingItemsTable.id, params.data.id), eq(clothingItemsTable.userId, userId)));
 
   if (!item) {
     res.status(404).json({ error: "Clothing item not found" });
@@ -225,7 +222,8 @@ router.get("/clothing/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.patch("/clothing/:id", async (req, res): Promise<void> => {
+router.patch("/clothing/:id", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const params = UpdateClothingItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -239,7 +237,6 @@ router.patch("/clothing/:id", async (req, res): Promise<void> => {
   }
 
   const updateData: Record<string, unknown> = {};
-  // Helper: treat empty string as null so the UI can clear optional text fields.
   const nullIfEmpty = (v: string | undefined) =>
     v === undefined ? undefined : v.trim() === "" ? null : v.trim();
 
@@ -260,7 +257,7 @@ router.patch("/clothing/:id", async (req, res): Promise<void> => {
   const [item] = await db
     .update(clothingItemsTable)
     .set(updateData)
-    .where(eq(clothingItemsTable.id, params.data.id))
+    .where(and(eq(clothingItemsTable.id, params.data.id), eq(clothingItemsTable.userId, userId)))
     .returning();
 
   if (!item) {
@@ -271,27 +268,32 @@ router.patch("/clothing/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.delete("/clothing/:id", async (req, res): Promise<void> => {
+router.delete("/clothing/:id", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req as AuthRequest).userId;
   const params = DeleteClothingItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  // Clean up outfit_items references
+  // Verify ownership BEFORE removing any related rows
+  const [item] = await db
+    .select()
+    .from(clothingItemsTable)
+    .where(and(eq(clothingItemsTable.id, params.data.id), eq(clothingItemsTable.userId, userId)));
+
+  if (!item) {
+    res.status(404).json({ error: "Clothing item not found" });
+    return;
+  }
+
   await db
     .delete(outfitItemsTable)
     .where(eq(outfitItemsTable.clothingItemId, params.data.id));
 
-  const [deleted] = await db
+  await db
     .delete(clothingItemsTable)
-    .where(eq(clothingItemsTable.id, params.data.id))
-    .returning();
-
-  if (!deleted) {
-    res.status(404).json({ error: "Clothing item not found" });
-    return;
-  }
+    .where(eq(clothingItemsTable.id, params.data.id));
 
   res.sendStatus(204);
 });

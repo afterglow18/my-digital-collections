@@ -1,9 +1,11 @@
 import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { usersTable } from "./users";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const savedOutfitsTable = pgTable("saved_outfits", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

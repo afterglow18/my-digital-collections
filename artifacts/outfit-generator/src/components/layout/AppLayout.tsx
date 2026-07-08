@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Shirt, Sparkles, Bookmark } from "lucide-react";
+import { Shirt, Sparkles, Bookmark, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGetWardrobeStats } from "@workspace/api-client-react";
+import { useAuthContext } from "@/context/AuthContext";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { data: stats } = useGetWardrobeStats();
+  const { logout } = useAuthContext();
 
   const navItems = [
     { href: "/", label: "Wardrobe", icon: Shirt, badge: stats?.total },
@@ -31,6 +33,18 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Bottom Navigation */}
         <nav className="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
           <ul className="flex items-center justify-around">
+            {/* Sign out — far right, small */}
+            <li className="absolute right-3 bottom-3">
+              <button
+                onClick={logout}
+                aria-label="Sign out"
+                className="flex flex-col items-center gap-1 opacity-30 hover:opacity-60 active:opacity-80 transition-opacity"
+              >
+                <div className="p-2.5">
+                  <LogOut className="w-4 h-4 text-muted-foreground" strokeWidth={2} />
+                </div>
+              </button>
+            </li>
             {navItems.map((item) => {
               const isActive = location === item.href;
               const Icon = item.icon;
