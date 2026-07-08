@@ -41,7 +41,7 @@ export default function AuthPage({ onAuthenticated }: { onAuthenticated: () => v
   const containerRef = useRef<HTMLDivElement>(null);
   const ir = useImageRect(containerRef);
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -164,122 +164,192 @@ export default function AuthPage({ onAuthenticated }: { onAuthenticated: () => v
                   letterSpacing: "-0.02em",
                 }}
               >
-                {mode === "signin" ? "Welcome back ✨" : "Create your closet ✨"}
+                {mode === "signin" ? "Welcome back ✨" : mode === "signup" ? "Create your closet ✨" : "Reset password 🔑"}
               </motion.h1>
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Email */}
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoCapitalize="none"
-                autoCorrect="off"
-                style={{
-                  width: "100%",
-                  height: 44,
-                  borderRadius: 100,
-                  padding: "0 18px",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "#fff",
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1.5px solid rgba(255,255,255,0.22)",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-
-              {/* Password */}
-              <input
-                type="password"
-                placeholder={mode === "signup" ? "Password (min. 6 characters)" : "Password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  height: 44,
-                  borderRadius: 100,
-                  padding: "0 18px",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "#fff",
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1.5px solid rgba(255,255,255,0.22)",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-
-              {/* Error */}
-              <AnimatePresence>
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
+            <AnimatePresence mode="wait">
+              {/* ── Forgot password view ── */}
+              {mode === "forgot" ? (
+                <motion.div
+                  key="forgot"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 14, alignItems: "center" }}
+                >
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", textAlign: "center", lineHeight: 1.5, margin: 0 }}>
+                    To reset your password, email us and we'll get you back into your closet ASAP.
+                  </p>
+                  <a
+                    href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
+                      display: "block",
+                      width: "100%",
+                      height: 46,
+                      borderRadius: 100,
+                      fontFamily: "var(--font-display, sans-serif)",
+                      fontWeight: 800,
+                      fontSize: 15,
+                      letterSpacing: "-0.01em",
+                      color: "#fff",
+                      background: "linear-gradient(to bottom, #ff91b0, #e0437a)",
+                      border: "none",
+                      boxShadow: "0 4px 16px rgba(224,67,122,0.40)",
+                      textDecoration: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxSizing: "border-box",
+                    } as React.CSSProperties}
+                  >
+                    Contact Support
+                  </a>
+                  <button
+                    onClick={() => { setMode("signin"); setError(""); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}
+                  >
+                    ← Back to sign in
+                  </button>
+                </motion.div>
+              ) : (
+                /* ── Sign in / Sign up form ── */
+                <motion.div
+                  key="form"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Email */}
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      style={{
+                        width: "100%",
+                        height: 44,
+                        borderRadius: 100,
+                        padding: "0 18px",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#fff",
+                        background: "rgba(255,255,255,0.12)",
+                        border: "1.5px solid rgba(255,255,255,0.22)",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+
+                    {/* Password */}
+                    <input
+                      type="password"
+                      placeholder={mode === "signup" ? "Password (min. 6 characters)" : "Password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        height: 44,
+                        borderRadius: 100,
+                        padding: "0 18px",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#fff",
+                        background: "rgba(255,255,255,0.12)",
+                        border: "1.5px solid rgba(255,255,255,0.22)",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+
+                    {/* Forgot password link — sign in only */}
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        onClick={() => { setMode("forgot"); setError(""); }}
+                        style={{
+                          alignSelf: "flex-end",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "rgba(255,255,255,0.45)",
+                          padding: 0,
+                          marginTop: -4,
+                        }}
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+
+                    {/* Error */}
+                    <AnimatePresence>
+                      {error && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          style={{ fontSize: 12, fontWeight: 600, color: "#ff7070", textAlign: "center", margin: "0 4px" }}
+                        >
+                          {error}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Submit button */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      style={{
+                        marginTop: 4,
+                        height: 46,
+                        borderRadius: 100,
+                        fontFamily: "var(--font-display, sans-serif)",
+                        fontWeight: 800,
+                        fontSize: 15,
+                        letterSpacing: "-0.01em",
+                        color: "#fff",
+                        background: loading ? "rgba(255,182,193,0.5)" : "linear-gradient(to bottom, #ff91b0, #e0437a)",
+                        border: "none",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        boxShadow: "0 4px 16px rgba(224,67,122,0.40)",
+                        transition: "opacity 0.15s",
+                      }}
+                    >
+                      {loading ? "…" : mode === "signin" ? "Sign In" : "Create Account"}
+                    </button>
+                  </form>
+
+                  {/* Toggle sign in / sign up */}
+                  <button
+                    onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
+                    style={{
+                      marginTop: 16,
+                      width: "100%",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
                       fontSize: 12,
                       fontWeight: 600,
-                      color: "#ff7070",
+                      color: "rgba(255,255,255,0.55)",
                       textAlign: "center",
-                      margin: "0 4px",
                     }}
                   >
-                    {error}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-
-              {/* Submit button */}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  marginTop: 4,
-                  height: 46,
-                  borderRadius: 100,
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontWeight: 800,
-                  fontSize: 15,
-                  letterSpacing: "-0.01em",
-                  color: "#fff",
-                  background: loading
-                    ? "rgba(255,182,193,0.5)"
-                    : "linear-gradient(to bottom, #ff91b0, #e0437a)",
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  boxShadow: "0 4px 16px rgba(224,67,122,0.40)",
-                  transition: "opacity 0.15s",
-                }}
-              >
-                {loading ? "…" : mode === "signin" ? "Sign In" : "Create Account"}
-              </button>
-            </form>
-
-            {/* Toggle mode */}
-            <button
-              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-              style={{
-                marginTop: 16,
-                width: "100%",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: 12,
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.55)",
-                textAlign: "center",
-              }}
-            >
-              {mode === "signin"
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
-            </button>
+                    {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </div>
