@@ -29,6 +29,9 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.mydigitalcloset.app
+        api_key_resource:
+          resource_type: integration
+          integration_name: My Digital Closet App
       xcode: latest
       node: 20
       groups:
