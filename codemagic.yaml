@@ -37,7 +37,7 @@ workflows:
       - name: Install pnpm and dependencies
         script: |
           which pnpm || npm install -g pnpm
-          pnpm install --frozen-lockfile --ignore-workspace-root-check
+          pnpm install --frozen-lockfile
 
       - name: Build web assets
         script: |
