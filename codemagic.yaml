@@ -51,6 +51,28 @@ workflows:
           npx cap add ios
           npx cap sync ios
 
+      - name: Inject app icon
+        script: |
+          ICONSET="artifacts/outfit-generator/ios/App/App/Assets.xcassets/AppIcon.appiconset"
+          mkdir -p "$ICONSET"
+          cp app-store/AppIcon-1024.png "$ICONSET/AppIcon-1024.png"
+          cat > "$ICONSET/Contents.json" << 'EOF'
+          {
+            "images": [
+              {
+                "filename": "AppIcon-1024.png",
+                "idiom": "universal",
+                "platform": "ios",
+                "size": "1024x1024"
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+
       - name: Share App scheme
         script: |
           SCHEMES_DIR="$XCODE_PROJECT/xcshareddata/xcschemes"
