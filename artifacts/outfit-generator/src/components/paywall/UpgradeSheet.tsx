@@ -7,7 +7,7 @@
  * Design:
  *   Background  — cream #F8F4ED
  *   Card        — black, white text
- *   CTA button  — closet-door yellow #F0C030, black text
+ *   CTA button  — hot pink #ff91b0, black text
  */
 import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,7 +111,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             <div className="flex items-baseline gap-2">
               <span
                 className="font-display font-bold text-5xl leading-none"
-                style={{ color: "#F0C030" }}
+                style={{ color: "#ff91b0" }}
               >
                 $4.99
               </span>
@@ -137,7 +137,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
                      active:translate-x-1 active:translate-y-1 transition-all
                      disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            background: "#F0C030",
+            background: "#ff91b0",
             boxShadow: status === "pending" ? "none" : "5px 5px 0px 0px rgba(0,0,0,1)",
           }}
         >
