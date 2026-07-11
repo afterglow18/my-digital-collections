@@ -130,11 +130,10 @@ interface Props {
 }
 
 const PHOTO_TIPS = [
-  "Place the product on a clean, flat surface.",
-  "Use a plain, consistent background.",
-  "Make sure the label or product front is visible.",
-  "Take the photo in good lighting.",
-  "Make sure the entire product is in frame.",
+  "Lay the item flat.",
+  "Use a plain, consistent background (bed, sheet, or blanket).",
+  "Take the photo directly from above.",
+  "Make sure the entire item is visible.",
 ] as const;
 
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {
