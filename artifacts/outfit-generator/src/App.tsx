@@ -98,7 +98,7 @@ function AppShell() {
 
   // Still verifying stored token — show blank yellow screen (avoids flash)
   if (state.status === 'loading') {
-    return <div style={{ position: 'fixed', inset: 0, background: '#F0C030' }} />;
+    return <div style={{ position: 'fixed', inset: 0, background: '#ff91b0' }} />;
   }
 
   return (

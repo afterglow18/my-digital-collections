@@ -52,7 +52,7 @@ function DoorPanel({
         [isLeft ? "left" : "right"]: 0,
         width: "50%",
         height: "100%",
-        background: "#F2C832",
+        background: "#ff91b0",
         transformOrigin: isLeft ? "0% 50%" : "100% 50%",
         [isLeft ? "borderRight" : "borderLeft"]: "3px solid rgba(0,0,0,0.22)",
         boxShadow: isLeft
@@ -152,7 +152,7 @@ export default function WelcomePage({ onEnter }: Props) {
         position: "fixed",
         inset: 0,
         zIndex: 200,
-        background: "#F0C030",
+        background: "#ff91b0",
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "center",
@@ -168,7 +168,7 @@ export default function WelcomePage({ onEnter }: Props) {
           height: "calc(100dvh - 90px)",  // matches main's effective height
           position: "relative",
           overflow: "hidden",
-          background: "#F0C030",
+          background: "#ff91b0",
         }}
       >
         {/* Background image */}

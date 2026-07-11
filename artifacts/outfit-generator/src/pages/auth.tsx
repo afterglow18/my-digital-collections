@@ -188,10 +188,10 @@ export default function AuthPage({ onAuthenticated }: { onAuthenticated: () => v
   const cardTop = ir ? ir.top + ir.height * 0.38 : null;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "#F0C030", display: "flex", alignItems: "flex-start", justifyContent: "center", overflow: "hidden" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "#ff91b0", display: "flex", alignItems: "flex-start", justifyContent: "center", overflow: "hidden" }}>
       <div
         ref={containerRef}
-        style={{ width: "100%", maxWidth: 448, height: "calc(100dvh - 90px)", position: "relative", overflow: "hidden", background: "#F0C030" }}
+        style={{ width: "100%", maxWidth: 448, height: "calc(100dvh - 90px)", position: "relative", overflow: "hidden", background: "#ff91b0" }}
       >
         {/* Background wardrobe image */}
         {ir && (
