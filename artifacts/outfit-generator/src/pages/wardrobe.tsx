@@ -24,10 +24,10 @@ import React, {
 import { useLocation } from "wouter";
 import {
   useListClothing, getListClothingQueryKey,
-  useSaveOutfit, useListOutfits, getListOutfitsQueryKey,
+  useListOutfits, getListOutfitsQueryKey,
   ClothingItem,
 } from "@workspace/api-client-react";
-import { X, Heart, Bookmark } from "lucide-react";
+import { X, Bookmark } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { QuickAddSheet } from "@/components/clothing/QuickAddSheet";
@@ -124,8 +124,6 @@ export default function WardrobePage() {
   const [addCategory,   setAddCategory]   = useState<Category | null>(null);
   const [detailsItem,   setDetailsItem]   = useState<ClothingItem | null>(null);
   const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
-  const [isSaveOpen,    setIsSaveOpen]    = useState(false);
-  const [saveName,      setSaveName]      = useState("");
 
   const { data: makeup     = [] } = useListClothing({ category: "makeup"     }, { query: { queryKey: getListClothingQueryKey({ category: "makeup"     }) } });
   const { data: skincare   = [] } = useListClothing({ category: "skincare"   }, { query: { queryKey: getListClothingQueryKey({ category: "skincare"   }) } });
@@ -136,9 +134,9 @@ export default function WardrobePage() {
   const rowData: Record<RowKey, ClothingItem[]> = { makeup, skincare, hair, fragrances };
   const totalItems = makeup.length + skincare.length + hair.length + fragrances.length;
 
-  const saveOutfit  = useSaveOutfit();
+
   const queryClient = useQueryClient();
-  const { tier, canAddItem, canSaveOutfit } = useEntitlements();
+  const { tier, canAddItem } = useEntitlements();
 
   useEffect(() => {
     setCentred(prev => {
@@ -173,30 +171,7 @@ export default function WardrobePage() {
 
   const handleItemTap = useCallback((item: ClothingItem) => setDetailsItem(item), []);
 
-  const handleSaveClick = useCallback(() => {
-    if (canSaveOutfit(outfits.length)) setIsSaveOpen(true); else setUpgradeReason("outfits");
-  }, [canSaveOutfit, outfits.length]);
-
   const [, navigate] = useLocation();
-
-  const handleSave = () => {
-    if (!saveName.trim()) return;
-    if (!canSaveOutfit(outfits.length)) {
-      setIsSaveOpen(false); setSaveName(""); setUpgradeReason("outfits"); return;
-    }
-    const itemIds = Object.values(centred)
-      .filter((i): i is ClothingItem => i != null)
-      .map(i => i.id);
-    saveOutfit.mutate(
-      { data: { name: saveName.trim(), itemIds } },
-      { onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
-        setIsSaveOpen(false); setSaveName("");
-      }},
-    );
-  };
-
-  const canSave   = ROWS.every(({ key }) => !!centred[key]);
   const isFree    = tier === "free";
   const itemsLeft = isFree ? Math.max(0, FREE_ITEM_LIMIT - totalItems) : null;
   const ready     = ir.width > 0;
@@ -249,7 +224,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: pY(ir, 0.105), left: "50%", transform: "translateX(-50%)",
+                top: pY(ir, 0.165), left: "50%", transform: "translateX(-50%)",
                 zIndex: 25,
                 padding: "3px 14px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
@@ -353,111 +328,6 @@ export default function WardrobePage() {
             );
           })}
 
-          {/* ── Floating SAVE OUTFIT button ───────────────────────────────── */}
-          <AnimatePresence mode="wait">
-            {isSaveOpen ? (
-              <motion.div
-                key="save-input"
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                style={{
-                  position: "absolute",
-                  top:   pY(ir, 0.10),
-                  left:  pX(ir, LM.doorL),
-                  width: pW(ir, LM.doorR - LM.doorL),
-                  display: "flex",
-                  gap: 6,
-                  zIndex: 30,
-                }}
-              >
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Name this look…"
-                  value={saveName}
-                  onChange={e => setSaveName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSave()}
-                  data-testid="input-outfit-name"
-                  style={{
-                    flex: 1, height: 36, borderRadius: 20, padding: "0 14px",
-                    fontSize: 13, fontWeight: 600, color: "#3a2400",
-                    background: "rgba(255,252,248,0.97)",
-                    border: "1.5px solid rgba(220,150,160,0.60)",
-                    boxShadow: "0 3px 12px rgba(0,0,0,0.14)",
-                    outline: "none",
-                  }}
-                />
-                <button
-                  onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
-                  style={{
-                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                    background: "rgba(255,248,248,0.97)",
-                    border: "1.5px solid rgba(220,150,160,0.40)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <X style={{ width: 14, height: 14, color: "#c06070" }} />
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={!saveName.trim() || saveOutfit.isPending}
-                  data-testid="button-save-outfit-confirm"
-                  style={{
-                    padding: "0 14px", height: 36, borderRadius: 20, flexShrink: 0,
-                    background: "linear-gradient(to bottom, #f7c6d8, #e08090)",
-                    color: "#fff", fontWeight: 700, fontSize: 12, border: "none",
-                    boxShadow: "0 3px 10px rgba(220,100,130,0.32)",
-                    opacity: (!saveName.trim() || saveOutfit.isPending) ? 0.45 : 1,
-                    cursor: "pointer",
-                  }}
-                >
-                  {saveOutfit.isPending ? "…" : "Save ♡"}
-                </button>
-              </motion.div>
-            ) : (
-              <motion.button
-                key="save-pill"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: canSave ? 1 : 0.55, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                onClick={handleSaveClick}
-                data-testid="button-save-outfit"
-                aria-label="Save Outfit"
-                style={{
-                  position: "absolute",
-                  top:       pY(ir, 0.10),
-                  left:      "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 25,
-                  height: 34,
-                  padding: "0 20px",
-                  borderRadius: 20,
-                  border: "none",
-                  background: canSave
-                    ? "linear-gradient(to bottom, #f7c6d8, #e08090)"
-                    : "rgba(255,255,255,0.55)",
-                  color: canSave ? "#fff" : "#9a5060",
-                  fontWeight: 700,
-                  fontSize: 11,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase" as const,
-                  boxShadow: canSave
-                    ? "0 2px 10px rgba(220,100,130,0.35)"
-                    : "0 0 0 1.5px rgba(220,150,160,0.35)",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap" as const,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <Heart style={{ width: 13, height: 13 }} />
-                Save Outfit
-              </motion.button>
-            )}
-          </AnimatePresence>
 
           {/* ── Favorites shortcut ── */}
           <button
