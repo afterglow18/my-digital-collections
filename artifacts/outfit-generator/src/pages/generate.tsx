@@ -57,8 +57,8 @@ function useImageRect(ref: RefObject<HTMLDivElement>): ImgRect {
       const iR = IMG_W / IMG_H;
       const cR = cW / cH;
       let rW: number, rH: number, rL: number, rT: number;
-      if (cR > iR) { rH = cH; rW = cH * iR; rT = 0; rL = (cW - rW) / 2; }
-      else          { rW = cW; rH = cW / iR; rL = 0; rT = 0; }
+      // Always fill the full width — container clips any excess height.
+      const rW = cW, rH = cW / iR, rL = 0, rT = 0;
       setRect({ top: rT, left: rL, width: rW, height: rH, containerH: cH });
     };
     compute();
