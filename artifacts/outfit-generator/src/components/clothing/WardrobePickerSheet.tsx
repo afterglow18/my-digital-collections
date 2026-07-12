@@ -39,7 +39,9 @@ interface Props {
 }
 
 export function WardrobePickerSheet({ open, onOpenChange, category, onPick, existingItemIds = [] }: Props) {
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showQuickAdd, setShowQuickAdd]         = useState(false);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [quickAddCategory, setQuickAddCategory] = useState<Category>("makeup");
   const queryClient = useQueryClient();
 
   // When category is provided fetch that category; otherwise fetch all
@@ -146,9 +148,10 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
           )}
         </div>
 
-        {/* Footer — Add New button (only when a specific category is selected) */}
-        {category && (
-          <div className="p-4 border-t-2 border-black bg-white flex-shrink-0">
+        {/* Footer */}
+        <div className="p-4 border-t-2 border-black bg-white flex-shrink-0">
+          {category ? (
+            /* Known-category mode: direct Add New button */
             <button
               onClick={() => setShowQuickAdd(true)}
               className="w-full flex items-center justify-center gap-2 py-3
@@ -160,17 +163,58 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
               <Plus className="w-5 h-5" />
               Add New {label} to Vanity
             </button>
-          </div>
-        )}
+          ) : showCategoryPicker ? (
+            /* Extras mode — category chips */
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 text-center">
+                Choose a category
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["makeup", "skincare", "hair", "fragrances"] as Category[]).map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setQuickAddCategory(cat);
+                      setShowQuickAdd(true);
+                      setShowCategoryPicker(false);
+                    }}
+                    className="py-2.5 border-2 border-black rounded-xl bg-primary font-display font-bold
+                               text-sm uppercase tracking-tight
+                               shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                               active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                  >
+                    {CATEGORY_LABELS[cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Extras mode — Add New button that reveals category picker */
+            <button
+              onClick={() => setShowCategoryPicker(true)}
+              className="w-full flex items-center justify-center gap-2 py-3
+                         border-4 border-black rounded-2xl bg-primary font-display font-bold
+                         text-base uppercase tracking-tight
+                         shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                         active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Extra to Vanity
+            </button>
+          )}
+        </div>
       </motion.div>
 
       {/* QuickAddSheet for uploading a brand-new item */}
       <AnimatePresence>
-        {showQuickAdd && category && (
+        {showQuickAdd && (
           <QuickAddSheet
             open
-            onOpenChange={(o) => setShowQuickAdd(o)}
-            category={category}
+            onOpenChange={(o) => {
+              setShowQuickAdd(o);
+              if (!o) setShowCategoryPicker(false);
+            }}
+            category={category ?? quickAddCategory}
             existingCount={items?.length ?? 0}
             onCreated={handleNewlyAdded}
           />
