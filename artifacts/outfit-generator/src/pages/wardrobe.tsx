@@ -279,8 +279,33 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
+            const labelY = pY(ir, lm.btnCY + (lm.sectionTop - lm.btnCY) * 0.08);
+
             return (
               <React.Fragment key={key}>
+
+                {/* ── Category label ── */}
+                <div style={{
+                  position: "absolute",
+                  top: labelY,
+                  left: carLeft,
+                  width: carW,
+                  transform: "translateY(-50%)",
+                  zIndex: 12,
+                  textAlign: "center",
+                  pointerEvents: "none",
+                }}>
+                  <span style={{
+                    fontSize: Math.max(9, pH(ir, 0.013)),
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    color: "rgba(120,60,70,0.75)",
+                    fontFamily: "var(--font-display)",
+                    textTransform: "uppercase",
+                  }}>
+                    {btnLabel}
+                  </span>
+                </div>
 
                 {/* ── Item carousel — fills the section between buttons ── */}
                 {items.length > 0 && (
