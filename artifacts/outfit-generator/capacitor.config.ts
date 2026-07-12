@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.mydigitalcloset.app',
-  appName: 'As If!',
+  appId: 'com.mydigitalvanity.app',
+  appName: 'My Digital Vanity',
   webDir: 'dist/public',
 
   // -------------------------------------------------------------------------
@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
     // Allow the WKWebView to scroll; the app manages its own scroll areas
     scrollEnabled: true,
     // Prevents white flash on launch
-    backgroundColor: '#FFFDF7',
+    backgroundColor: '#F4D6DD',
     // Allow inline media playback (used for wardrobe image previews)
     allowsInlineMediaPlayback: true,
   },
@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 1800,
       launchAutoHide: true,
-      backgroundColor: '#FFFDF7',
+      backgroundColor: '#F4D6DD',
       iosSpinnerStyle: 'small',
       showSpinner: false,
     },
@@ -30,7 +30,7 @@ const config: CapacitorConfig = {
     // Overlay the status bar so the cream background shows through the notch
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#FFFDF7',
+      backgroundColor: '#F4D6DD',
       overlaysWebView: true,
     },
   },
