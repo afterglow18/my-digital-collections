@@ -199,7 +199,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
                          active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
             >
               <Plus className="w-5 h-5" />
-              Add New Extra to Vanity
+              Add New Item to Vanity
             </button>
           )}
         </div>
