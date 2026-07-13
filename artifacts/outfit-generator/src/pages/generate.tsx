@@ -247,7 +247,7 @@ export default function GeneratePage() {
     >
       {/* ── Background image ── */}
       <img
-        src="/briefcase-bg.png?v=2"
+        src="/suitcase-bg.png?v=1"
         alt="My Digital Suitcase"
         style={{
           position: "absolute",

@@ -83,7 +83,7 @@ export default function WelcomePage({ onEnter }: Props) {
 
       {/* ── Full-screen briefcase image — scales up from centre when revealing ── */}
       <motion.img
-        src="/briefcase-bg.png"
+        src="/suitcase-bg.png"
         alt=""
         draggable={false}
         style={{

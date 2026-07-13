@@ -221,7 +221,7 @@ export default function WardrobePage() {
     >
       {/* ── Background image ── */}
       <img
-        src="/briefcase-bg.png?v=12"
+        src="/suitcase-bg.png?v=1"
         alt="My Digital Suitcase"
         style={{
           position: "absolute",
