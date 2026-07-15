@@ -18,13 +18,9 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.mydigitalsuitcase.app
       xcode: latest
       node: 22
       groups:
-        - signing
         - build_env
       vars:
         XCODE_SCHEME: App
@@ -121,6 +117,7 @@ workflows:
             ONLY_ACTIVE_ARCH=NO \
             ARCHS=arm64 \
             DEVELOPMENT_TEAM=2A78MFVCJS \
+            CODE_SIGN_STYLE=Manual \
             -archivePath "$CM_BUILD_DIR/build/App.xcarchive" \
             archive
 
