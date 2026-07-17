@@ -298,6 +298,7 @@ export default function GeneratePage() {
                 textTransform: "uppercase",
                 color: "#1a0800",
                 lineHeight: 1.1,
+                marginTop: 6,
               }}>
                 MATCHMAKER
               </div>
