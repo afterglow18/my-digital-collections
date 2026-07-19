@@ -6,6 +6,7 @@ import outfitsRouter from "./outfits";
 import stripeRouter from "./stripe";
 import authRouter from "./auth";
 import passwordResetRouter from "./password-reset";
+import downloadRouter from "./download";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(storageRouter);
 router.use(clothingRouter);
 router.use(outfitsRouter);
 router.use(stripeRouter);
+router.use(downloadRouter);
 
 export default router;
