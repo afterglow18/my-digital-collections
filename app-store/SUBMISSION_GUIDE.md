@@ -1,4 +1,4 @@
-# App Store Submission Guide — My Digital Closet
+# App Store Submission Guide — My Digital Collections
 
 ## Overview
 
@@ -31,7 +31,7 @@ Before anything else, deploy the API server so the mobile app has a stable URL t
 2. Click **+** → **New App**
 3. Fill in:
    - Platform: iOS
-   - Name: **My Digital Closet**
+   - Name: **My Digital Collections**
    - Primary Language: English (U.S.)
    - Bundle ID: **com.mydigitalcloset.app** *(you'll need to register this in your Developer account first)*
    - SKU: **MYDIGITALCLOSET001**
