@@ -25,7 +25,6 @@ workflows:
       node: 22
       groups:
         - signing
-        - build_env
       vars:
         XCODE_SCHEME: App
         XCODE_PROJECT: artifacts/outfit-generator/ios/App/App.xcodeproj
@@ -34,6 +33,7 @@ workflows:
         BUNDLE_ID: com.mydigitalcollections.app
         TEAM_ID: 2A78MFVCJS
         PROFILE_NAME: My Digital Collections
+        VITE_API_BASE_URL: https://my-digital-collections.replit.app/api
 
     scripts:
       - name: Install pnpm and dependencies
