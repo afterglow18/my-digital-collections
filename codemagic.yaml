@@ -106,8 +106,8 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'My Digital Collections uses Face ID to protect your wardrobe.'" App/Info.plist 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :NSFaceIDUsageDescription 'My Digital Collections uses Face ID to protect your wardrobe.'" App/Info.plist
           # Force correct display name under the icon (two words, with space)
-          /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 'My Collections'" App/Info.plist 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 'My Collections'" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 'My Collection'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 'My Collection'" App/Info.plist
 
       - name: Re-apply provisioning profiles after cap sync
         script: |
@@ -143,7 +143,7 @@ workflows:
             DEVELOPMENT_TEAM=2A78MFVCJS \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="My Digital Collections AppStore" \
-            INFOPLIST_KEY_CFBundleDisplayName="My Collections" \
+            INFOPLIST_KEY_CFBundleDisplayName="My Collection" \
             -archivePath "$CM_BUILD_DIR/build/App.xcarchive" \
             archive
 
