@@ -96,9 +96,10 @@ function useSubscriptionContext() {
     queryFn: async () => {
       const Purchases = await getPurchases();
       if (!Purchases) return null;
+      // getOfferings() returns { offerings: Offering[], current: Offering | null }.
+      // Return the full object so callers can reach .current.availablePackages.
       const result = await Purchases.getOfferings();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (result as any).offerings ?? result ?? null;
+      return result ?? null;
     },
     staleTime: 300 * 1000,
     retry: false,
