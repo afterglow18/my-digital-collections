@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { useEntitlements, PurchaseResult } from "@/hooks/useEntitlements";
 import type { PurchaseProduct } from "@/lib/entitlements";
+import { useSubscription } from "@/lib/revenuecat";
 
 interface Props {
   onClose: () => void;
@@ -26,6 +27,7 @@ const PRO_FEATURES = [
 
 export function PremiumSheet({ onClose }: Props) {
   const { purchase } = useEntitlements();
+  const { restore, isRestoring } = useSubscription();
   const [pending, setPending] = useState<PurchaseProduct | null>(null);
 
   const handlePurchase = useCallback(
@@ -136,6 +138,29 @@ export function PremiumSheet({ onClose }: Props) {
         >
           Maybe Later
         </button>
+        <button
+          onClick={() => { restore().catch(() => {}); }}
+          disabled={isRestoring}
+          className="text-xs font-semibold text-black/30 text-center hover:text-black/50 transition-colors disabled:opacity-40"
+        >
+          {isRestoring ? "Restoring…" : "Restore Purchases"}
+        </button>
+        {/* Legal links — required by Apple */}
+        <div className="flex items-center justify-center gap-3 pt-1">
+          <button
+            onClick={() => window.open("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/", "_system")}
+            className="text-[10px] font-medium text-black/30 underline underline-offset-2 hover:text-black/50 transition-colors"
+          >
+            Terms of Use
+          </button>
+          <span className="text-black/20 text-[10px]">•</span>
+          <button
+            onClick={() => window.open("https://app.notion.com/p/My-Digital-Collection-Privacy-Policy-39682db6065380b19dedcb108d4a0ef4?source=copy_link", "_system")}
+            className="text-[10px] font-medium text-black/30 underline underline-offset-2 hover:text-black/50 transition-colors"
+          >
+            Privacy Policy
+          </button>
+        </div>
       </div>
     </motion.div>
   );

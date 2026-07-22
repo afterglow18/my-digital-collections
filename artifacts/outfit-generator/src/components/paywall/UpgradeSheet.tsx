@@ -122,7 +122,7 @@ function TierCard({
 // ── Sheet ─────────────────────────────────────────────────────────────────────
 
 export function UpgradeSheet({ reason, onClose }: Props) {
-  const { offerings, purchase } = useSubscription();
+  const { offerings, purchase, restore, isRestoring } = useSubscription();
   const [selected, setSelected] = useState<TierId>("lifetime");
   const [status,   setStatus]   = useState<"idle" | "pending">("idle");
 
@@ -257,6 +257,29 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         >
           Maybe Later
         </button>
+        <button
+          onClick={() => { restore().catch(() => {}); }}
+          disabled={isRestoring}
+          className="text-xs font-semibold text-black/30 text-center hover:text-black/50 transition-colors disabled:opacity-40"
+        >
+          {isRestoring ? "Restoring…" : "Restore Purchases"}
+        </button>
+        {/* Legal links — required by Apple */}
+        <div className="flex items-center justify-center gap-3 pt-1">
+          <button
+            onClick={() => window.open("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/", "_system")}
+            className="text-[10px] font-medium text-black/30 underline underline-offset-2 hover:text-black/50 transition-colors"
+          >
+            Terms of Use
+          </button>
+          <span className="text-black/20 text-[10px]">•</span>
+          <button
+            onClick={() => window.open("https://app.notion.com/p/My-Digital-Collection-Privacy-Policy-39682db6065380b19dedcb108d4a0ef4?source=copy_link", "_system")}
+            className="text-[10px] font-medium text-black/30 underline underline-offset-2 hover:text-black/50 transition-colors"
+          >
+            Privacy Policy
+          </button>
+        </div>
       </div>
     </motion.div>
   );
