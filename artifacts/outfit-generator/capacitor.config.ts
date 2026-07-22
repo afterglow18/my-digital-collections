@@ -15,6 +15,16 @@ const config: CapacitorConfig = {
     backgroundColor: '#F9F4EE',
     // Allow inline media playback (used for wardrobe image previews)
     allowsInlineMediaPlayback: true,
+    // Info.plist permission strings — all three are required by iOS/TCC.
+    // Missing any one causes SIGABRT or silent refusal when the camera/picker opens.
+    infoPlist: {
+      NSCameraUsageDescription:
+        'My Digital Collections needs camera access so you can photograph clothing items and add them to your wardrobe.',
+      NSPhotoLibraryUsageDescription:
+        'My Digital Collections needs access to your photo library so you can choose existing photos of clothing items.',
+      NSPhotoLibraryAddUsageDescription:
+        'My Digital Collections saves photos you capture with the camera back to your photo library.',
+    },
   },
 
   plugins: {
