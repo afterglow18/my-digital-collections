@@ -370,11 +370,26 @@ export default function WardrobePage() {
                     width:  carW,
                     height: btnH,
                     zIndex: 22,
-                    background: "transparent",
-                    border: "none",
+                    background: "rgba(184,137,78,0.15)",
+                    border: "1px solid rgba(184,137,78,0.40)",
+                    borderRadius: 100,
                     cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <span style={{
+                    fontSize: Math.max(9, pH(ir, 0.013)),
+                    fontWeight: 800,
+                    letterSpacing: "0.10em",
+                    color: "#E8D4B0",
+                    fontFamily: "var(--font-display)",
+                    textTransform: "uppercase",
+                  }}>
+                    {btnLabel}
+                  </span>
+                </button>
 
               </React.Fragment>
             );
