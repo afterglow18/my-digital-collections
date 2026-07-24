@@ -25,7 +25,7 @@ const config: CapacitorConfig = {
       NSPhotoLibraryAddUsageDescription:
         'My Digital Collections saves photos you capture with the camera back to your photo library.',
 
-      // iPhone: portrait only (the suitcase background is portrait-oriented).
+      // iPhone: portrait only (the background image is portrait-oriented).
       UISupportedInterfaceOrientations: [
         'UIInterfaceOrientationPortrait',
         'UIInterfaceOrientationPortraitUpsideDown',
