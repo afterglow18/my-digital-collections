@@ -42,11 +42,11 @@ import { FREE_ITEM_LIMIT } from "@/lib/entitlements";
 type RowKey   = "outfits" | "beauty" | "toiletries" | "essentials";
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
-const ROWS: { key: RowKey; btnLabel: string }[] = [
-  { key: "outfits",    btnLabel: "+ ADD OUTFITS"    },
-  { key: "beauty",     btnLabel: "+ ADD BEAUTY"     },
-  { key: "toiletries", btnLabel: "+ ADD TOILETRIES" },
-  { key: "essentials", btnLabel: "+ ADD ESSENTIALS" },
+const ROWS: { key: RowKey; btnLabel: string; displayLabel: string }[] = [
+  { key: "outfits",    btnLabel: "+ ADD OUTFITS",    displayLabel: "COLLECTION 1" },
+  { key: "beauty",     btnLabel: "+ ADD BEAUTY",     displayLabel: "COLLECTION 2" },
+  { key: "toiletries", btnLabel: "+ ADD TOILETRIES", displayLabel: "COLLECTION 3" },
+  { key: "essentials", btnLabel: "+ ADD ESSENTIALS", displayLabel: "COLLECTION 4" },
 ];
 
 // ── Image constants ───────────────────────────────────────────────────────────
@@ -284,7 +284,7 @@ export default function WardrobePage() {
           )}
 
           {/* ── 4 shelf rows ── */}
-          {ROWS.map(({ key, btnLabel }, rowIdx) => {
+          {ROWS.map(({ key, btnLabel, displayLabel }, rowIdx) => {
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 
@@ -328,7 +328,7 @@ export default function WardrobePage() {
                     fontFamily: "var(--font-display)",
                     textTransform: "uppercase",
                   }}>
-                    {btnLabel}
+                    {displayLabel}
                   </span>
                 </button>
 

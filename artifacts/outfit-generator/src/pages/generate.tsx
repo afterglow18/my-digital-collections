@@ -312,7 +312,13 @@ export default function GeneratePage() {
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 
-              const label = key.toUpperCase();
+              const DISPLAY_LABELS: Record<RowKey, string> = {
+                outfits:    "COLLECTION 1",
+                beauty:     "COLLECTION 2",
+                toiletries: "COLLECTION 3",
+                essentials: "COLLECTION 4",
+              };
+              const label = DISPLAY_LABELS[key];
               const labelY = pY(ir, lm.btnCY + (lm.sectionTop - lm.btnCY) * 0.08);
 
               return (
