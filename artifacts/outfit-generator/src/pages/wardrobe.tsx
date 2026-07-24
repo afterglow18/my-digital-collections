@@ -326,7 +326,7 @@ export default function WardrobePage() {
                     fontFamily: "var(--font-display)",
                     textTransform: "uppercase",
                   }}>
-                    {displayLabel}
+                    {btnLabel}
                   </span>
                 </button>
 
@@ -359,6 +359,7 @@ export default function WardrobePage() {
                     baked-in pink pill in the background image (at btnCY).
                     The carousel lives BELOW the pill (sectionTop > btnCY),
                     so this zone is never obscured by items.               */}
+                {/* tap zone over shelf area for adding items */}
                 <button
                   onClick={addHandlers[key]}
                   aria-label={btnLabel}
@@ -370,26 +371,11 @@ export default function WardrobePage() {
                     width:  carW,
                     height: btnH,
                     zIndex: 22,
-                    background: "rgba(184,137,78,0.15)",
-                    border: "1px solid rgba(184,137,78,0.40)",
-                    borderRadius: 100,
+                    background: "transparent",
+                    border: "none",
                     cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                   }}
-                >
-                  <span style={{
-                    fontSize: Math.max(9, pH(ir, 0.013)),
-                    fontWeight: 800,
-                    letterSpacing: "0.10em",
-                    color: "#E8D4B0",
-                    fontFamily: "var(--font-display)",
-                    textTransform: "uppercase",
-                  }}>
-                    {btnLabel}
-                  </span>
-                </button>
+                />
 
               </React.Fragment>
             );
