@@ -54,23 +54,21 @@ const IMG_W = 1024;
 const IMG_H = 1536;
 const NAV_H = 90;
 
-// ── Landmark fractions (calibrated for suitcase-open-bg.jpg 989×1536) ─────────
-// Real-photo suitcase, shot from above.
-// Lid interior:  y ≈ 0.05 → 0.38   (rows 1 & 2)
-// Main body:     y ≈ 0.42 → 0.80   (rows 3 & 4)
-// doorL/doorR:   left/right inner walls of the suitcase interior
+// ── Landmark fractions (calibrated for collection-bg.png 1024×1536) ──────────
+// Luxury dark display case with 4 gold-rimmed shelves and spotlights at top.
+// doorL/doorR: inner left/right walls of the glass case.
 const LM = {
-  doorL: 0.182,  // inner left wall
-  doorR: 0.776,  // inner right wall
+  doorL: 0.065,  // inner left wall
+  doorR: 0.935,  // inner right wall
 
   rows: [
-    { sectionTop: 0.170, shelfY: 0.265, btnCY: 0.150 },  // OUTFITS  (lid, upper)
-    { sectionTop: 0.305, shelfY: 0.400, btnCY: 0.285 },  // BEAUTY   (lid, lower)
-    { sectionTop: 0.505, shelfY: 0.618, btnCY: 0.485 },  // TOILETRIES (body, upper)
-    { sectionTop: 0.660, shelfY: 0.770, btnCY: 0.640 },  // ESSENTIALS (body, lower)
+    { sectionTop: 0.100, shelfY: 0.278, btnCY: 0.140 },  // Collection 1 (top, spotlights)
+    { sectionTop: 0.290, shelfY: 0.478, btnCY: 0.330 },  // Collection 2
+    { sectionTop: 0.490, shelfY: 0.678, btnCY: 0.530 },  // Collection 3
+    { sectionTop: 0.690, shelfY: 0.872, btnCY: 0.730 },  // Collection 4
   ],
 
-  saveAreaY: 0.84,
+  saveAreaY: 0.882,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────
@@ -209,12 +207,12 @@ export default function WardrobePage() {
         width: "100%",
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
-        background: "#C8B9A2",
+        background: "#111",
       }}
     >
       {/* ── Background image — object-fit:cover avoids WebKit negative-left clipping bug ── */}
       <img
-        src="/suitcase-open-bg.jpg"
+        src="/collection-bg.png"
         alt="My Digital Collections"
         style={{
           position: "absolute",
@@ -249,7 +247,7 @@ export default function WardrobePage() {
               letterSpacing: "0.08em",
               whiteSpace: "nowrap",
               textTransform: "uppercase",
-              color: "#1a0800",
+              color: "#E8D4B0",
               lineHeight: 1.1,
             }}>
               MY DIGITAL COLLECTION
@@ -268,12 +266,12 @@ export default function WardrobePage() {
                 zIndex: 25,
                 padding: "3px 14px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
-                  ? "rgba(200,40,40,0.14)"
-                  : "rgba(255,255,255,0.55)",
+                  ? "rgba(200,40,40,0.20)"
+                  : "rgba(0,0,0,0.45)",
                 boxShadow: totalItems >= FREE_ITEM_LIMIT
-                  ? "0 0 0 2px rgba(200,40,40,0.40)"
-                  : "0 0 0 1.5px rgba(180,100,110,0.28)",
-                color: totalItems >= FREE_ITEM_LIMIT ? "#aa0000" : "#7a3a40",
+                  ? "0 0 0 2px rgba(200,40,40,0.50)"
+                  : "0 0 0 1.5px rgba(184,137,78,0.40)",
+                color: totalItems >= FREE_ITEM_LIMIT ? "#ff6b6b" : "#E8D4B0",
                 fontWeight: 700, fontSize: 10,
                 letterSpacing: "0.08em", textTransform: "uppercase",
                 whiteSpace: "nowrap", cursor: "pointer",
@@ -324,7 +322,7 @@ export default function WardrobePage() {
                     fontSize: Math.max(9, pH(ir, 0.013)),
                     fontWeight: 800,
                     letterSpacing: "0.12em",
-                    color: "#3A2210",
+                    color: "#E8D4B0",
                     fontFamily: "var(--font-display)",
                     textTransform: "uppercase",
                   }}>

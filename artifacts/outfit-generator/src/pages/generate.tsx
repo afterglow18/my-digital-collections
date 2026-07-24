@@ -29,16 +29,15 @@ const NAV_H = 90;
 const PINK  = "#E8D4B0";
 
 const LM = {
-  doorL: 0.182,
-  doorR: 0.776,
+  doorL: 0.065,
+  doorR: 0.935,
   rows: [
-    { sectionTop: 0.170, shelfY: 0.265, btnCY: 0.150 },  // OUTFITS  (lid, upper)
-    { sectionTop: 0.305, shelfY: 0.400, btnCY: 0.285 },  // BEAUTY   (lid, lower)
-    { sectionTop: 0.505, shelfY: 0.618, btnCY: 0.485 },  // TOILETRIES (body, upper)
-    { sectionTop: 0.660, shelfY: 0.770, btnCY: 0.640 },  // ESSENTIALS (body, lower)
+    { sectionTop: 0.100, shelfY: 0.278, btnCY: 0.140 },  // Collection 1
+    { sectionTop: 0.290, shelfY: 0.478, btnCY: 0.330 },  // Collection 2
+    { sectionTop: 0.490, shelfY: 0.678, btnCY: 0.530 },  // Collection 3
+    { sectionTop: 0.690, shelfY: 0.872, btnCY: 0.730 },  // Collection 4
   ],
-  // Action bar: from just below FRAGRANCES through the full bottom
-  barY:   0.848,
+  barY:   0.882,
   barBot: 1.000,
 } as const;
 
@@ -240,12 +239,12 @@ export default function GeneratePage() {
         width: "100%",
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
-        background: "#C8B9A2",
+        background: "#111",
       }}
     >
       {/* ── Background image — object-fit:cover avoids WebKit negative-left clipping bug ── */}
       <img
-        src="/suitcase-open-bg.jpg"
+        src="/collection-bg.png"
         alt="My Digital Collections"
         style={{
           position: "absolute",
@@ -284,7 +283,7 @@ export default function GeneratePage() {
                 letterSpacing: "0.08em",
                 whiteSpace: "nowrap",
                 textTransform: "uppercase",
-                color: "#1a0800",
+                color: "#E8D4B0",
                 lineHeight: 1.1,
               }}>
                 MY DIGITAL COLLECTION
@@ -296,7 +295,7 @@ export default function GeneratePage() {
                 letterSpacing: "0.06em",
                 whiteSpace: "nowrap",
                 textTransform: "uppercase",
-                color: "#1a0800",
+                color: "#E8D4B0",
                 lineHeight: 1.1,
               }}>
                 MATCHMAKER
@@ -339,7 +338,7 @@ export default function GeneratePage() {
                       fontSize: Math.max(9, pH(ir, 0.013)),
                       fontWeight: 800,
                       letterSpacing: "0.12em",
-                      color: "#3A2210",
+                      color: "#E8D4B0",
                       fontFamily: "var(--font-display)",
                       textTransform: "uppercase",
                     }}>
@@ -373,7 +372,7 @@ export default function GeneratePage() {
                       <span style={{
                         fontSize: 10, fontWeight: 700,
                         letterSpacing: "0.09em", textTransform: "uppercase",
-                        color: "rgba(180,100,110,0.40)",
+                        color: "rgba(184,137,78,0.55)",
                       }}>
                         No items
                       </span>
@@ -410,8 +409,8 @@ export default function GeneratePage() {
                   <span style={{
                     fontSize: 10, fontWeight: 800,
                     letterSpacing: "0.13em", textTransform: "uppercase",
-                    color: "#3A2210",
-                    background: "rgba(240,225,196,0.90)",
+                    color: "#E8D4B0",
+                    background: "rgba(10,8,5,0.88)",
                     padding: "3px 11px", borderRadius: 20,
                     whiteSpace: "nowrap",
                   }}>
@@ -431,20 +430,20 @@ export default function GeneratePage() {
                 textAlign: "center",
                 padding: "14px 22px",
                 borderRadius: 16,
-                background: "rgba(245,237,216,0.92)",
-                border: "1.5px solid rgba(180,140,90,0.40)",
+                background: "rgba(10,8,5,0.88)",
+                border: "1.5px solid rgba(184,137,78,0.40)",
                 boxShadow: "0 4px 18px rgba(0,0,0,0.11)",
                 maxWidth: pW(ir, 0.65),
               }}>
                 <p style={{
                   fontWeight: 800, fontSize: 12,
                   letterSpacing: "0.07em", textTransform: "uppercase",
-                  color: "#3A2210", fontFamily: "var(--font-display)", margin: 0,
+                  color: "#E8D4B0", fontFamily: "var(--font-display)", margin: 0,
                 }}>
                   Your collection is empty
                 </p>
                 <p style={{
-                  fontSize: 11, color: "#9a5060",
+                  fontSize: 11, color: "rgba(184,137,78,0.80)",
                   marginTop: 5, lineHeight: 1.5,
                 }}>
                   Add outfits, beauty, toiletries or essentials in the Collection tab first.
@@ -464,8 +463,8 @@ export default function GeneratePage() {
                 height: pH(ir, LM.barBot - LM.barY),
                 zIndex: 18,
                 pointerEvents: "none",
-                background: "rgba(245,237,216,0.96)",
-                borderTop: "1px solid rgba(180,140,90,0.25)",
+                background: "rgba(10,8,5,0.94)",
+                borderTop: "1px solid rgba(184,137,78,0.25)",
               }}
             />
 
@@ -500,8 +499,8 @@ export default function GeneratePage() {
                       border: "2.5px solid #B8894E",
                       background: hasItems
                         ? "linear-gradient(to bottom, #E8D4B0, #B8894E)"
-                        : "rgba(200,175,140,0.32)",
-                      color: hasItems ? "#3A2210" : "#7A5A30",
+                        : "rgba(30,20,10,0.50)",
+                      color: hasItems ? "#E8D4B0" : "rgba(184,137,78,0.55)",
                       fontWeight: 800, fontSize: 16,
                       letterSpacing: "-0.01em", textTransform: "uppercase",
                       whiteSpace: "nowrap",
@@ -527,7 +526,7 @@ export default function GeneratePage() {
                       padding: "0 24px", height: 44,
                       alignItems: "center", justifyContent: "center",
                       borderRadius: 24,
-                      background: "rgba(240,225,196,0.85)",
+                      background: "rgba(10,8,5,0.85)",
                       border: "1.5px solid rgba(180,140,90,0.28)",
                     }}
                   >
@@ -567,7 +566,7 @@ export default function GeneratePage() {
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #B8894E",
                         background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
-                        color: "#4A3A3A",
+                        color: "#E8D4B0",
                         fontFamily: "var(--font-display)",
                         fontWeight: 800, fontSize: 14,
                         letterSpacing: "-0.01em", textTransform: "uppercase",
@@ -590,8 +589,8 @@ export default function GeneratePage() {
                         flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0,
                         height: 54, borderRadius: 28,
                         border: "2.5px solid #B8894E",
-                        background: canSave ? "#fff" : "rgba(240,240,240,0.80)",
-                        color: "#3A2210",
+                        background: canSave ? "rgba(232,212,176,0.15)" : "rgba(30,20,10,0.40)",
+                        color: "#E8D4B0",
                         fontFamily: "var(--font-display)",
                         fontWeight: 800, fontSize: 14,
                         letterSpacing: "-0.01em", textTransform: "uppercase",
@@ -628,9 +627,9 @@ export default function GeneratePage() {
                       onKeyDown={e => e.key === "Enter" && handleSave()}
                       style={{
                         flex: 1, height: 38, borderRadius: 20, padding: "0 14px",
-                        fontSize: 13, fontWeight: 600, color: "#3A2210",
-                        background: "rgba(245,237,216,0.98)",
-                        border: "1.5px solid rgba(180,140,90,0.50)",
+                        fontSize: 13, fontWeight: 600, color: "#E8D4B0",
+                        background: "rgba(10,8,5,0.90)",
+                        border: "1.5px solid rgba(184,137,78,0.50)",
                         boxShadow: "0 3px 12px rgba(0,0,0,0.13)",
                         outline: "none",
                       }}
@@ -639,8 +638,8 @@ export default function GeneratePage() {
                       onClick={() => { setIsSaveOpen(false); setSaveName(""); }}
                       style={{
                         width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                        background: "rgba(245,237,216,0.97)",
-                        border: "1.5px solid rgba(180,140,90,0.36)",
+                        background: "rgba(10,8,5,0.85)",
+                        border: "1.5px solid rgba(184,137,78,0.36)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: "pointer",
                       }}
@@ -653,7 +652,7 @@ export default function GeneratePage() {
                       style={{
                         padding: "0 14px", height: 36, borderRadius: 20, flexShrink: 0,
                         background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
-                        color: "#3A2210", fontWeight: 700, fontSize: 13, border: "1.5px solid #B8894E",
+                        color: "#E8D4B0", fontWeight: 700, fontSize: 13, border: "1.5px solid rgba(184,137,78,0.80)",
                         boxShadow: "0 3px 10px rgba(120,80,40,0.30)",
                         opacity: (!saveName.trim() || saveOutfit.isPending) ? 0.42 : 1,
                         cursor: "pointer",
