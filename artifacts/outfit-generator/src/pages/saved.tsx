@@ -160,7 +160,9 @@ export default function SavedPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
+    <div className="min-h-full flex flex-col pt-8 px-4 md:px-8 pb-8 bg-secondary/10 relative">
+      {/* Centre content on iPad so it doesn't stretch edge-to-edge */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col flex-1">
       <header className="mb-6">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
         <div className="flex items-center justify-between">
@@ -217,7 +219,7 @@ export default function SavedPage() {
           ))}
         </div>
       ) : outfits && outfits.length > 0 ? (
-        <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {outfits.map((outfit) => {
             // Group items by category — first match per slot wins
             const bySlot = (outfit.items ?? []).reduce<Partial<Record<SlotKey, ClothingItem>>>(
@@ -420,6 +422,8 @@ export default function SavedPage() {
           </p>
         </div>
       )}
+
+      </div>{/* /max-w-4xl */}
 
       {/* Upgrade sheet */}
       <AnimatePresence>

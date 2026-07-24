@@ -156,9 +156,12 @@ export default function AccountPage() {
   return (
     <>
     <div
-      className="min-h-full flex flex-col px-4 pb-10"
+      className="min-h-full flex flex-col px-4 md:px-8 pb-10"
       style={{ paddingTop: "max(2rem, env(safe-area-inset-top))", background: "#F5F0E8" }}
     >
+      {/* Centre + cap width on iPad */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col flex-1">
+
       {/* Page title */}
       <header className="mb-5">
         <h1 className="font-display font-bold text-4xl uppercase tracking-tighter leading-none">
@@ -185,7 +188,8 @@ export default function AccountPage() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col gap-4">
+      {/* On iPad show two cards side-by-side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* ── 1. MY PLAN ──────────────────────────────────────────────────── */}
         <Card emoji="👑" title="My Plan">
@@ -311,7 +315,8 @@ export default function AccountPage() {
           </p>
         </Card>
 
-      </div>
+      </div>{/* /grid */}
+      </div>{/* /max-w-4xl */}
     </div>
 
     <AnimatePresence>

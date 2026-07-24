@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { Shirt, Sparkles, Bookmark, Settings } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import { cn } from "@/lib/utils";
 import { useGetWardrobeStats } from "@/hooks/useLocalDB";
 
@@ -27,19 +28,31 @@ export function AppLayout({ children }: AppLayoutProps) {
     { href: "/account",  label: "Settings", icon: Settings  },
   ];
 
+  // On a real device the full screen is the canvas — remove the narrow phone
+  // frame so iPad (and iPhone Plus) can use the whole display.  The phone frame
+  // is kept only when running in a desktop browser (for preview purposes).
+  const isNative = Capacitor.isNativePlatform();
+
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f8f9fa] flex justify-center lg:py-8 lg:px-4">
-      {/* Phone Frame Constraint for Desktop */}
-      <div className="w-full max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col lg:overflow-y-auto">
+    <div className={cn(
+      "min-h-[100dvh] w-full flex justify-center",
+      isNative ? "bg-background" : "bg-[#f8f9fa] lg:py-8 lg:px-4",
+    )}>
+      {/* On device: full-screen. In browser: phone frame capped at 448 px. */}
+      <div className={cn(
+        "w-full bg-background h-[100dvh] relative overflow-hidden flex flex-col",
+        !isNative && "max-w-md lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl lg:overflow-y-auto",
+      )}>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto pb-[90px] relative">
           {children}
         </main>
 
-        {/* Bottom Navigation */}
+        {/* Bottom Navigation — centred + capped so tabs don't stretch across a
+            wide iPad display, which would make them hard to reach with thumbs. */}
         <nav className="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
-          <ul className="flex items-center justify-around">
+          <ul className="flex items-center justify-around max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = location === item.href;
               const Icon = item.icon;

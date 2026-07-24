@@ -24,6 +24,19 @@ const config: CapacitorConfig = {
         'My Digital Collections needs access to your photo library so you can choose existing photos of clothing items.',
       NSPhotoLibraryAddUsageDescription:
         'My Digital Collections saves photos you capture with the camera back to your photo library.',
+
+      // iPhone: portrait only (the suitcase background is portrait-oriented).
+      UISupportedInterfaceOrientations: [
+        'UIInterfaceOrientationPortrait',
+        'UIInterfaceOrientationPortraitUpsideDown',
+      ],
+      // iPad: allow landscape too — the fraction-based layout adapts.
+      'UISupportedInterfaceOrientations~ipad': [
+        'UIInterfaceOrientationPortrait',
+        'UIInterfaceOrientationPortraitUpsideDown',
+        'UIInterfaceOrientationLandscapeLeft',
+        'UIInterfaceOrientationLandscapeRight',
+      ],
     },
   },
 
