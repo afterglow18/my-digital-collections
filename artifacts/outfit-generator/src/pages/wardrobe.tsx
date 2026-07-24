@@ -232,7 +232,7 @@ export default function WardrobePage() {
           {/* ── Page title ── */}
           <div style={{
             position: "absolute",
-            top: pY(ir, 0.090),
+            top: pY(ir, 0.062),
             left: 8,
             right: 8,
             zIndex: 25,
