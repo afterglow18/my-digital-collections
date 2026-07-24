@@ -45,7 +45,7 @@ export default function WelcomePage({ onEnter }: Props) {
         background: "#0a0806",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        overflow: "hidden",
+        overflowY: "auto",
       }}
     >
       {/* ── Ambient glow behind image ── */}
@@ -70,6 +70,7 @@ export default function WelcomePage({ onEnter }: Props) {
           zIndex: 2,
           width: "82%",
           maxWidth: 380,
+          maxHeight: "48vh",
         }}
         animate={isExiting
           ? { scale: 3.5, opacity: 0 }
@@ -83,6 +84,8 @@ export default function WelcomePage({ onEnter }: Props) {
           draggable={false}
           style={{
             width: "100%",
+            height: "100%",
+            objectFit: "cover",
             borderRadius: 18,
             display: "block",
             border: "1.5px solid rgba(184,137,78,0.35)",
