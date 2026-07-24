@@ -250,7 +250,7 @@ export default function WardrobePage() {
               color: "#E8D4B0",
               lineHeight: 1.1,
             }}>
-              MY DIGITAL COLLECTIONS
+              COLLECTIONS
             </div>
           </div>
 
