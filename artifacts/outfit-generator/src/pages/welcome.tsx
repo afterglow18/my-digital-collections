@@ -114,7 +114,7 @@ export default function WelcomePage({ onEnter }: Props) {
           color: "#E8D4B0",
           textAlign: "center",
         }}>
-          MY DIGITAL<br />COLLECTION
+          MY DIGITAL<br />COLLECTIONS
         </div>
 
         <div style={{
@@ -125,7 +125,7 @@ export default function WelcomePage({ onEnter }: Props) {
           textTransform: "uppercase" as const,
           color: "rgba(232,212,176,0.38)",
         }}>
-          your personal collection
+          your personal collections
         </div>
 
         {/* CTA button */}
