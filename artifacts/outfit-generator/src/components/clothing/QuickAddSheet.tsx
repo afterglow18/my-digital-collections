@@ -20,7 +20,6 @@ import {
   getWardrobeStatsQueryKey,
 } from "@/hooks/useLocalDB";
 import { useQueryClient } from "@tanstack/react-query";
-import { encodeToPng } from "@/lib/processImage";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -111,15 +110,12 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
   // ── Single-file encode + save (returns true on success) ──────────────────
   const saveOneFile = useCallback(async (file: File, itemIndex: number): Promise<boolean> => {
-    let png: Blob;
     try {
-      png = await encodeToPng(file);
-    } catch (err) {
-      console.error("PNG encoding failed:", err);
-      return false;
-    }
-    try {
-      const path     = await blobToDataUrl(png);
+      // Pass the original file directly to blobToDataUrl, which already
+      // resizes to 800px max and compresses to JPEG. Skipping the intermediate
+      // full-resolution PNG step avoids a large memory spike that crashes
+      // the WKWebView on iOS with high-megapixel camera photos.
+      const path     = await blobToDataUrl(file);
       const label    = CATEGORY_LABELS[category];
       const n        = itemIndex + 1;
       const autoName = n === 1 ? label : `${label} ${n}`;
