@@ -108,7 +108,7 @@ export default function WelcomePage({ onEnter }: Props) {
         <div style={{
           fontFamily: "var(--font-display, serif)",
           fontWeight: 900,
-          fontSize: "clamp(28px, 9vw, 44px)",
+          fontSize: "clamp(22px, 7vw, 36px)",
           letterSpacing: "-0.02em",
           lineHeight: 1.08,
           color: "#E8D4B0",
@@ -149,7 +149,7 @@ export default function WelcomePage({ onEnter }: Props) {
             pointerEvents: isExiting ? "none" : "auto",
           }}
         >
-          Open Collection ✨
+          Open Collections ✨
         </motion.button>
       </motion.div>
 
