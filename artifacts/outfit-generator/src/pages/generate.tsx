@@ -306,8 +306,9 @@ export default function GeneratePage() {
             {ROWS.map(({ key }, rowIdx) => {
               const lm    = LM.rows[rowIdx];
               const items = { outfits, beauty, toiletries, essentials }[key];
-              const secTop = pY(ir, lm.sectionTop);
-              const secH   = pH(ir, lm.shelfY - lm.sectionTop);
+              const carouselTopFrac = lm.sectionTop + 0.042;
+              const secTop = pY(ir, carouselTopFrac);
+              const secH   = pH(ir, lm.shelfY - carouselTopFrac);
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 

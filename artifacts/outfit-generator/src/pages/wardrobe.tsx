@@ -286,8 +286,9 @@ export default function WardrobePage() {
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 
-            const secTop  = pY(ir, lm.sectionTop);
-            const secH    = pH(ir, lm.shelfY - lm.sectionTop);
+            const carouselTopFrac = lm.sectionTop + 0.042;
+            const secTop  = pY(ir, carouselTopFrac);
+            const secH    = pH(ir, lm.shelfY - carouselTopFrac);
             const carLeft = pX(ir, LM.doorL);
             const carW    = pW(ir, LM.doorR - LM.doorL);
 
