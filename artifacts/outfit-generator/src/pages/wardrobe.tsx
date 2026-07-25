@@ -445,7 +445,7 @@ export default function WardrobePage() {
             }}
           >
             <span style={{ fontSize: pW(ir, 0.022), fontWeight: 900, color: "#3A2210", letterSpacing: "0.06em", fontFamily: "var(--font-display)" }}>SAVE</span>
-            <span style={{ fontSize: pW(ir, 0.019), fontWeight: 800, color: "#3A2210", letterSpacing: "0.04em", fontFamily: "var(--font-display)" }}>CASE 🤎</span>
+            <span style={{ fontSize: pW(ir, 0.019), fontWeight: 800, color: "#3A2210", letterSpacing: "0.04em", fontFamily: "var(--font-display)" }}>GROUP 🤎</span>
           </button>
         </>
       )}
