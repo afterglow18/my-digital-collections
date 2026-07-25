@@ -14,6 +14,7 @@ import {
   Loader2,
   Check,
 } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import {
   useCreateClothingItem,
   getListClothingQueryKey,
@@ -108,8 +109,48 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     onOpenChange(false);
   }, [onOpenChange]);
 
+  // ── Native camera (Capacitor) ─────────────────────────────────────────────
+  const handleTakePhoto = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) {
+      // Browser fallback: HTML file input with capture
+      cameraInputRef.current?.click();
+      return;
+    }
+    try {
+      const { Camera, CameraResultType, CameraSource } = await import("@capacitor/camera");
+      const photo = await Camera.getPhoto({
+        quality: 82,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+        width: 800,
+      });
+      if (!photo.dataUrl) return;
+      setPhase("uploading");
+      setProgress({ current: 1, total: 1 });
+      // Convert data URL → blob → resized JPEG via the standard pipeline
+      const res  = await fetch(photo.dataUrl);
+      const blob = await res.blob();
+      const ok   = await saveOneFile(blob, existingCount);
+      setProgress(null);
+      if (!ok) {
+        setErrorMsg("Could not save photo. Please try again.");
+        setPhase("pick");
+      } else {
+        handleClose();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+      // User cancelled or denied permission — not a real error
+      if (msg.includes("cancel") || msg.includes("denied") || msg.includes("user denied")) return;
+      console.error("Camera error:", err);
+      setErrorMsg("Could not open camera. Please try again.");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingCount, handleClose]);
+
   // ── Single-file encode + save (returns true on success) ──────────────────
-  const saveOneFile = useCallback(async (file: File, itemIndex: number): Promise<boolean> => {
+  const saveOneFile = useCallback(async (file: File | Blob, itemIndex: number): Promise<boolean> => {
     try {
       // Pass the original file directly to blobToDataUrl, which already
       // resizes to 800px max and compresses to JPEG. Skipping the intermediate
@@ -222,7 +263,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               <div className="flex gap-3">
                 {/* Take Photo */}
                 <button
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={handleTakePhoto}
                   className="flex-1 flex flex-col items-center justify-center gap-3 py-8
                              border-4 border-black rounded-2xl bg-primary
                              shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
@@ -314,7 +355,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
       </div>
 
       {/* Hidden file inputs */}
-      {/* Camera — opens native camera on mobile */}
+      {/* Camera input — used only as browser fallback; native uses @capacitor/camera */}
       <input
         ref={cameraInputRef}
         type="file"
