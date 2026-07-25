@@ -36,11 +36,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className={cn(
       "min-h-[100dvh] w-full flex justify-center",
-      isNative ? "bg-background" : "bg-[#f8f9fa] lg:py-8 lg:px-4",
+      isNative ? "bg-black" : "bg-[#f8f9fa] lg:py-8 lg:px-4",
     )}>
       {/* On device: full-screen. In browser: phone frame capped at 448 px. */}
       <div className={cn(
-        "w-full bg-background h-[100dvh] relative overflow-hidden flex flex-col",
+        "w-full h-[100dvh] relative overflow-hidden flex flex-col",
+        isNative ? "bg-black" : "bg-background",
         !isNative && "max-w-md lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl lg:overflow-y-auto",
       )}>
 
@@ -51,7 +52,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Bottom Navigation — centred + capped so tabs don't stretch across a
             wide iPad display, which would make them hard to reach with thumbs. */}
-        <nav className="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
+        <nav className={cn(
+          "absolute bottom-0 left-0 right-0 p-3 pb-safe z-[40]",
+          isNative
+            ? "bg-black border-t border-[#2a2218]"
+            : "bg-white border-t-[3px] border-black"
+        )}>
           <ul className="flex items-center justify-around max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = location === item.href;
@@ -63,14 +69,18 @@ export function AppLayout({ children }: AppLayoutProps) {
                       className={cn(
                         "p-2.5 rounded-full border-2 transition-all duration-200 ease-spring relative",
                         isActive
-                          ? "bg-primary border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
+                          ? isNative
+                            ? "bg-[#E8D4B0] border-[#E8D4B0] shadow-none -translate-y-1"
+                            : "bg-primary border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
                           : "bg-transparent border-transparent group-hover:bg-muted group-active:scale-95"
                       )}
                     >
                       <Icon
                         className={cn(
                           "w-6 h-6",
-                          isActive ? "text-black" : "text-muted-foreground",
+                          isActive
+                            ? "text-black"
+                            : isNative ? "text-[#6b5c45]" : "text-muted-foreground",
                           item.href === "/generate" && isActive ? "animate-pulse" : ""
                         )}
                         strokeWidth={isActive ? 2.5 : 2}
@@ -86,7 +96,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <span
                       className={cn(
                         "text-[10px] font-bold uppercase tracking-wider transition-colors",
-                        isActive ? "text-black" : "text-muted-foreground"
+                        isActive
+                          ? isNative ? "text-[#E8D4B0]" : "text-black"
+                          : isNative ? "text-[#4a3d2e]" : "text-muted-foreground"
                       )}
                     >
                       {item.label}
