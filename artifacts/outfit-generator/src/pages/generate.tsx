@@ -320,7 +320,7 @@ export default function GeneratePage() {
                 essentials: "COLLECTION 4",
               };
               const label = DISPLAY_LABELS[key];
-              const labelY = pY(ir, lm.btnCY + (lm.sectionTop - lm.btnCY) * 0.08);
+              const labelY = pY(ir, lm.sectionTop + 0.018);
 
               return (
                 <React.Fragment key={key}>
