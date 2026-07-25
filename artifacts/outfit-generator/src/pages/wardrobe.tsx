@@ -321,7 +321,7 @@ export default function WardrobePage() {
                   {/* Name — tapping opens the add sheet (original behaviour) */}
                   <button
                     onClick={addHandlers[key]}
-                    aria-label={`Add to ${labelText}`}
+                    aria-label={`Add to $+ {labelText}`}
                     style={{
                       background: "none", border: "none",
                       cursor: "pointer", padding: 0,
