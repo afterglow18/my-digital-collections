@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCollectionNames } from "@/hooks/useCollectionNames";
+import { useLocation } from "wouter";
 
 // ── Layout constants (same as wardrobe.tsx) ───────────────────────────────────
 const IMG_W = 1024;
@@ -98,6 +99,7 @@ export default function GeneratePage() {
   };
 
   const { names: collectionNames } = useCollectionNames();
+  const [, navigate] = useLocation();
 
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [centred,    setCentred]    = useState<Partial<Record<RowKey, ClothingItem>>>({});
@@ -444,10 +446,25 @@ export default function GeneratePage() {
                 </p>
                 <p style={{
                   fontSize: 11, color: "rgba(184,137,78,0.80)",
-                  marginTop: 5, lineHeight: 1.5,
+                  marginTop: 5, lineHeight: 1.5, marginBottom: 10,
                 }}>
                   Add your collectibles to the Collection page first.
                 </p>
+                <button
+                  onClick={() => navigate("/")}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    background: "#E8D4B0", color: "#1a0800",
+                    border: "1.5px solid rgba(184,137,78,0.6)",
+                    borderRadius: 10, padding: "7px 14px",
+                    fontSize: 11, fontWeight: 800,
+                    letterSpacing: "0.07em", textTransform: "uppercase",
+                    fontFamily: "var(--font-display)",
+                    cursor: "pointer",
+                  }}
+                >
+                  + Add Items
+                </button>
               </div>
             )}
 
