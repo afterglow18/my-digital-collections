@@ -440,13 +440,13 @@ export default function GeneratePage() {
                   letterSpacing: "0.07em", textTransform: "uppercase",
                   color: "#E8D4B0", fontFamily: "var(--font-display)", margin: 0,
                 }}>
-                  Your collection is empty
+                  YOUR COLLECTION IS EMPTY
                 </p>
                 <p style={{
                   fontSize: 11, color: "rgba(184,137,78,0.80)",
                   marginTop: 5, lineHeight: 1.5,
                 }}>
-                  Add outfits, beauty, toiletries or essentials in the Collection tab first.
+                  Add your collectibles to the Collection page first.
                 </p>
               </div>
             )}
