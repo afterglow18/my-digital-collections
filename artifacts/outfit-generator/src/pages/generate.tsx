@@ -21,6 +21,7 @@ import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCollectionNames } from "@/hooks/useCollectionNames";
 
 // ── Layout constants (same as wardrobe.tsx) ───────────────────────────────────
 const IMG_W = 1024;
@@ -71,6 +72,7 @@ const pY = (ir: ImgRect, f: number) => ir.top    + ir.height * f;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RowKey = "outfits" | "beauty" | "toiletries" | "essentials";
+
 type Phase  = "idle" | "spinning" | "result";
 
 const ROWS: { key: RowKey }[] = [
@@ -94,6 +96,8 @@ export default function GeneratePage() {
     toiletries: useRef<ClosetRowHandle | null>(null),
     essentials: useRef<ClosetRowHandle | null>(null),
   };
+
+  const { names: collectionNames } = useCollectionNames();
 
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [centred,    setCentred]    = useState<Partial<Record<RowKey, ClothingItem>>>({});
@@ -313,13 +317,7 @@ export default function GeneratePage() {
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 
-              const DISPLAY_LABELS: Record<RowKey, string> = {
-                outfits:    "COLLECTION 1",
-                beauty:     "COLLECTION 2",
-                toiletries: "COLLECTION 3",
-                essentials: "COLLECTION 4",
-              };
-              const label = DISPLAY_LABELS[key];
+              const label = collectionNames[key];
               const labelY = pY(ir, lm.sectionTop + 0.018);
 
               return (

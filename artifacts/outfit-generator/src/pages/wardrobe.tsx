@@ -37,16 +37,18 @@ import { UpgradeSheet, UpgradeReason } from "@/components/paywall/UpgradeSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT } from "@/lib/entitlements";
+import { useCollectionNames } from "@/hooks/useCollectionNames";
+import { RenameCollectionSheet } from "@/components/RenameCollectionSheet";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RowKey   = "outfits" | "beauty" | "toiletries" | "essentials";
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
 
-const ROWS: { key: RowKey; btnLabel: string; displayLabel: string }[] = [
-  { key: "outfits",    btnLabel: "+ ADD COLLECTION 1", displayLabel: "COLLECTION 1" },
-  { key: "beauty",     btnLabel: "+ ADD COLLECTION 2", displayLabel: "COLLECTION 2" },
-  { key: "toiletries", btnLabel: "+ ADD COLLECTION 3", displayLabel: "COLLECTION 3" },
-  { key: "essentials", btnLabel: "+ ADD COLLECTION 4", displayLabel: "COLLECTION 4" },
+const ROWS: { key: RowKey }[] = [
+  { key: "outfits"    },
+  { key: "beauty"     },
+  { key: "toiletries" },
+  { key: "essentials" },
 ];
 
 // ── Image constants ───────────────────────────────────────────────────────────
@@ -120,6 +122,9 @@ export default function WardrobePage() {
   const [isSaveOpen,    setIsSaveOpen]    = useState(false);
   const [saveName,      setSaveName]      = useState("");
   const [saveSuccess,   setSaveSuccess]   = useState(false);
+  const [renameKey,     setRenameKey]     = useState<RowKey | null>(null);
+
+  const { names: collectionNames, setName: setCollectionName } = useCollectionNames();
 
   const saveOutfit = useSaveOutfit();
 
@@ -277,7 +282,7 @@ export default function WardrobePage() {
           )}
 
           {/* ── 4 shelf rows ── */}
-          {ROWS.map(({ key, btnLabel, displayLabel }, rowIdx) => {
+          {ROWS.map(({ key }, rowIdx) => {
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 
@@ -291,15 +296,17 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelY = pY(ir, lm.sectionTop + 0.018);
+            const labelY    = pY(ir, lm.sectionTop + 0.018);
+            const labelText = collectionNames[key];
+            const fontSize  = Math.max(9, pH(ir, 0.013));
 
             return (
               <React.Fragment key={key}>
 
-                {/* ── Category label (tappable → add photo) ── */}
+                {/* ── Collection label + pencil icon (tap → rename) ── */}
                 <button
-                  onClick={addHandlers[key]}
-                  aria-label={btnLabel}
+                  onClick={() => setRenameKey(key)}
+                  aria-label={`Rename ${labelText}`}
                   style={{
                     position: "absolute",
                     top: labelY,
@@ -307,7 +314,10 @@ export default function WardrobePage() {
                     width: carW,
                     transform: "translateY(-50%)",
                     zIndex: 23,
-                    textAlign: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 4,
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -315,15 +325,29 @@ export default function WardrobePage() {
                   }}
                 >
                   <span style={{
-                    fontSize: Math.max(9, pH(ir, 0.013)),
+                    fontSize,
                     fontWeight: 800,
                     letterSpacing: "0.12em",
                     color: "#E8D4B0",
                     fontFamily: "var(--font-display)",
                     textTransform: "uppercase",
                   }}>
-                    {btnLabel}
+                    {labelText}
                   </span>
+                  {/* Pencil icon */}
+                  <svg
+                    width={fontSize * 0.9}
+                    height={fontSize * 0.9}
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    style={{ flexShrink: 0, opacity: 0.7 }}
+                  >
+                    <path
+                      d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5Z"
+                      stroke="#E8D4B0" strokeWidth="1.4" strokeLinejoin="round"
+                    />
+                    <path d="M3 14h10" stroke="#E8D4B0" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
                 </button>
 
                 {/* ── Item carousel — fills the section between buttons ── */}
@@ -358,7 +382,7 @@ export default function WardrobePage() {
                 {/* tap zone over shelf area for adding items */}
                 <button
                   onClick={addHandlers[key]}
-                  aria-label={btnLabel}
+                  aria-label={`Add to ${labelText}`}
                   data-testid={`add-btn-${key}`}
                   style={{
                     position: "absolute",
@@ -552,6 +576,14 @@ export default function WardrobePage() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Rename collection sheet ── */}
+      <RenameCollectionSheet
+        open={renameKey !== null}
+        currentName={renameKey ? collectionNames[renameKey] : ""}
+        onSave={(name) => { if (renameKey) setCollectionName(renameKey, name); }}
+        onClose={() => setRenameKey(null)}
+      />
     </div>
   );
 }
