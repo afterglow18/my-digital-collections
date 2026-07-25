@@ -56,20 +56,20 @@ const IMG_H = 1536;
 const NAV_H = 90;
 
 // ── Landmark fractions (calibrated for collection-bg.png 1024×1536) ──────────
-// Luxury dark display case with 4 gold-rimmed shelves and spotlights at top.
-// doorL/doorR: inner left/right walls of the glass case.
+// Dark luxury display case — 3 gold shelf bars creating 4 sections,
+// spotlights at top, action buttons baked at bottom.
 const LM = {
-  doorL: 0.065,  // inner left wall
-  doorR: 0.935,  // inner right wall
+  doorL: 0.050,  // inner left wall
+  doorR: 0.950,  // inner right wall
 
   rows: [
-    { sectionTop: 0.100, shelfY: 0.278, btnCY: 0.140 },  // Collection 1 (top, spotlights)
-    { sectionTop: 0.290, shelfY: 0.478, btnCY: 0.330 },  // Collection 2
-    { sectionTop: 0.490, shelfY: 0.678, btnCY: 0.530 },  // Collection 3
-    { sectionTop: 0.690, shelfY: 0.872, btnCY: 0.730 },  // Collection 4
+    { sectionTop: 0.080, shelfY: 0.215, btnCY: 0.148 },  // Collection 1 (top, spotlights)
+    { sectionTop: 0.230, shelfY: 0.422, btnCY: 0.326 },  // Collection 2
+    { sectionTop: 0.438, shelfY: 0.632, btnCY: 0.535 },  // Collection 3
+    { sectionTop: 0.648, shelfY: 0.880, btnCY: 0.762 },  // Collection 4
   ],
 
-  saveAreaY: 0.882,
+  saveAreaY: 0.886,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────

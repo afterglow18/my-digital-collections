@@ -33,16 +33,16 @@ const NAV_H = 90;
 const PINK  = "#E8D4B0";
 
 const LM = {
-  doorL: 0.065,
-  doorR: 0.935,
+  doorL: 0.050,
+  doorR: 0.950,
   rows: [
-    { sectionTop: 0.100, shelfY: 0.278, btnCY: 0.140 },  // Collection 1
-    { sectionTop: 0.290, shelfY: 0.478, btnCY: 0.330 },  // Collection 2
-    { sectionTop: 0.490, shelfY: 0.678, btnCY: 0.530 },  // Collection 3
-    { sectionTop: 0.690, shelfY: 0.872, btnCY: 0.730 },  // Collection 4
+    { sectionTop: 0.080, shelfY: 0.215, btnCY: 0.148 },  // Collection 1
+    { sectionTop: 0.230, shelfY: 0.422, btnCY: 0.326 },  // Collection 2
+    { sectionTop: 0.438, shelfY: 0.632, btnCY: 0.535 },  // Collection 3
+    { sectionTop: 0.648, shelfY: 0.880, btnCY: 0.762 },  // Collection 4
   ],
-  barY:   0.882,
-  barBot: 1.000,
+  barY:   0.886,
+  barBot: 0.968,
 } as const;
 
 interface ImgRect {
