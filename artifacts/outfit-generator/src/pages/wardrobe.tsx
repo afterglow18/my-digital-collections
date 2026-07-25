@@ -192,8 +192,9 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
+  const CAROUSEL_OFFSET = 0.042;
   const sectionHeights = ready
-    ? LM.rows.map(lm => pH(ir, lm.shelfY - lm.sectionTop))
+    ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
 
   // Use the smallest row height so all carousels show photos at the same size
@@ -342,7 +343,7 @@ export default function WardrobePage() {
                       width:  carW,
                       height: secH,
                       zIndex: 10,
-                      overflow: "visible",
+                      overflow: "hidden",
                     }}
                   >
                     <ClosetRow

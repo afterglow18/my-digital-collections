@@ -226,8 +226,9 @@ export default function GeneratePage() {
   const canSave = Object.keys(centred).length > 0;
 
   // ── Section layout helpers — per-row, same as wardrobe.tsx ──────────────
+  const CAROUSEL_OFFSET = 0.042;
   const sectionHeights = ready
-    ? LM.rows.map(lm => pH(ir, lm.shelfY - lm.sectionTop))
+    ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -352,7 +353,7 @@ export default function GeneratePage() {
                       style={{
                         position: "absolute",
                         top: secTop, left: carLeft, width: carW, height: secH,
-                        zIndex: 10, overflow: "visible",
+                        zIndex: 10, overflow: "hidden",
                       }}
                     >
                       <ClosetRow
