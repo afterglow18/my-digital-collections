@@ -38,7 +38,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT } from "@/lib/entitlements";
 import { useCollectionNames } from "@/hooks/useCollectionNames";
-import { RenameCollectionSheet } from "@/components/RenameCollectionSheet";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RowKey   = "outfits" | "beauty" | "toiletries" | "essentials";
@@ -122,9 +121,7 @@ export default function WardrobePage() {
   const [isSaveOpen,    setIsSaveOpen]    = useState(false);
   const [saveName,      setSaveName]      = useState("");
   const [saveSuccess,   setSaveSuccess]   = useState(false);
-  const [renameKey,     setRenameKey]     = useState<RowKey | null>(null);
-
-  const { names: collectionNames, setName: setCollectionName } = useCollectionNames();
+  const { names: collectionNames } = useCollectionNames();
 
   const saveOutfit = useSaveOutfit();
 
@@ -303,8 +300,10 @@ export default function WardrobePage() {
             return (
               <React.Fragment key={key}>
 
-                {/* ── Collection label row: name tap = add, ✏️ tap = rename ── */}
-                <div
+                {/* ── Collection label — tap to add ── */}
+                <button
+                  onClick={addHandlers[key]}
+                  aria-label={`Add to ${labelText}`}
                   style={{
                     position: "absolute",
                     top: labelY,
@@ -312,58 +311,22 @@ export default function WardrobePage() {
                     width: carW,
                     transform: "translateY(-50%)",
                     zIndex: 23,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 5,
+                    background: "none", border: "none",
+                    cursor: "pointer", padding: 0,
+                    textAlign: "center",
                   }}
                 >
-                  {/* Name — tapping opens the add sheet (original behaviour) */}
-                  <button
-                    onClick={addHandlers[key]}
-                    aria-label={`Add to $+ {labelText}`}
-                    style={{
-                      background: "none", border: "none",
-                      cursor: "pointer", padding: 0,
-                    }}
-                  >
-                    <span style={{
-                      fontSize,
-                      fontWeight: 800,
-                      letterSpacing: "0.12em",
-                      color: "#E8D4B0",
-                      fontFamily: "var(--font-display)",
-                      textTransform: "uppercase",
-                    }}>
-                      {labelText}
-                    </span>
-                  </button>
-
-                  {/* Pencil — tapping opens the rename sheet */}
-                  <button
-                    onClick={() => setRenameKey(key)}
-                    aria-label={`Rename ${labelText}`}
-                    style={{
-                      background: "none", border: "none",
-                      cursor: "pointer", padding: 0,
-                      lineHeight: 0, flexShrink: 0,
-                    }}
-                  >
-                    <svg
-                      width={fontSize * 0.85}
-                      height={fontSize * 0.85}
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      style={{ opacity: 0.65 }}
-                    >
-                      <path
-                        d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5Z"
-                        stroke="#E8D4B0" strokeWidth="1.4" strokeLinejoin="round"
-                      />
-                      <path d="M3 14h10" stroke="#E8D4B0" strokeWidth="1.4" strokeLinecap="round"/>
-                    </svg>
-                  </button>
-                </div>
+                  <span style={{
+                    fontSize,
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    color: "#E8D4B0",
+                    fontFamily: "var(--font-display)",
+                    textTransform: "uppercase",
+                  }}>
+                    + {labelText}
+                  </span>
+                </button>
 
                 {/* ── Item carousel — fills the section between buttons ── */}
                 {items.length > 0 && (
@@ -592,13 +555,6 @@ export default function WardrobePage() {
         )}
       </AnimatePresence>
 
-      {/* ── Rename collection sheet ── */}
-      <RenameCollectionSheet
-        open={renameKey !== null}
-        currentName={renameKey ? collectionNames[renameKey] : ""}
-        onSave={(name) => { if (renameKey) setCollectionName(renameKey, name); }}
-        onClose={() => setRenameKey(null)}
-      />
     </div>
   );
 }

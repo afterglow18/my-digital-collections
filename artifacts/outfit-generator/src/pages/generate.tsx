@@ -23,6 +23,8 @@ import { ClosetRow, ClosetRowHandle } from "@/components/ClosetRow";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCollectionNames } from "@/hooks/useCollectionNames";
 import { useLocation } from "wouter";
+import { RenameCollectionSheet } from "@/components/RenameCollectionSheet";
+import type { RowKey as CollectionRowKey } from "@/hooks/useCollectionNames";
 
 // ── Layout constants (same as wardrobe.tsx) ───────────────────────────────────
 const IMG_W = 1024;
@@ -98,8 +100,9 @@ export default function GeneratePage() {
     essentials: useRef<ClosetRowHandle | null>(null),
   };
 
-  const { names: collectionNames } = useCollectionNames();
+  const { names: collectionNames, setName: setCollectionName } = useCollectionNames();
   const [, navigate] = useLocation();
+  const [renameKey, setRenameKey] = useState<CollectionRowKey | null>(null);
 
   const [phase,      setPhase]      = useState<Phase>("idle");
   const [centred,    setCentred]    = useState<Partial<Record<RowKey, ClothingItem>>>({});
@@ -325,7 +328,7 @@ export default function GeneratePage() {
               return (
                 <React.Fragment key={key}>
 
-                  {/* ── Category label ── */}
+                  {/* ── Category label + pencil (tap pencil → rename) ── */}
                   <div style={{
                     position: "absolute",
                     top: labelY,
@@ -333,8 +336,10 @@ export default function GeneratePage() {
                     width: carW,
                     transform: "translateY(-50%)",
                     zIndex: 12,
-                    textAlign: "center",
-                    pointerEvents: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 5,
                   }}>
                     <span style={{
                       fontSize: Math.max(9, pH(ir, 0.013)),
@@ -346,6 +351,29 @@ export default function GeneratePage() {
                     }}>
                       {label}
                     </span>
+                    <button
+                      onClick={() => setRenameKey(key as CollectionRowKey)}
+                      aria-label={`Rename ${label}`}
+                      style={{
+                        background: "none", border: "none",
+                        cursor: "pointer", padding: 0,
+                        lineHeight: 0, flexShrink: 0,
+                      }}
+                    >
+                      <svg
+                        width={Math.max(9, pH(ir, 0.013)) * 0.85}
+                        height={Math.max(9, pH(ir, 0.013)) * 0.85}
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        style={{ opacity: 0.65 }}
+                      >
+                        <path
+                          d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5Z"
+                          stroke="#E8D4B0" strokeWidth="1.4" strokeLinejoin="round"
+                        />
+                        <path d="M3 14h10" stroke="#E8D4B0" strokeWidth="1.4" strokeLinecap="round"/>
+                      </svg>
+                    </button>
                   </div>
 
                   {items.length > 0 ? (
@@ -685,6 +713,14 @@ export default function GeneratePage() {
           </>
         );
       })()}
+
+      {/* ── Rename collection sheet ── */}
+      <RenameCollectionSheet
+        open={renameKey !== null}
+        currentName={renameKey ? collectionNames[renameKey] : ""}
+        onSave={(name) => { if (renameKey) setCollectionName(renameKey, name); }}
+        onClose={() => setRenameKey(null)}
+      />
     </div>
   );
 }
