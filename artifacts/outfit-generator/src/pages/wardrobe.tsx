@@ -380,69 +380,55 @@ export default function WardrobePage() {
           })}
 
 
-          {/* ── Person icon tap zone ── */}
+          {/* ── Bottom action bar: 3 transparent tap zones over baked-in buttons ── */}
+          {/* Trophy (left) → Saved looks */}
           <button
-            onClick={() => navigate("/favorites")}
-            data-testid="button-person-icon"
+            onClick={() => navigate("/saved")}
             aria-label="View saved looks"
             style={{
               position: "absolute",
-              top:    pY(ir, 0.895),
-              left:   pX(ir, 0.115),
-              width:  pW(ir, 0.170),
-              height: pH(ir, 0.080),
+              top:    pY(ir, LM.saveAreaY),
+              left:   pX(ir, LM.doorL),
+              width:  pW(ir, 0.30),
+              height: pH(ir, 0.082),
               zIndex: 25,
               background: "transparent",
               border: "none",
               cursor: "pointer",
             }}
           />
-
-          {/* ── Lipstick icon tap zone — opens premium upgrade sheet ── */}
-          <button
-            onClick={() => setUpgradeReason("items")}
-            aria-label="Upgrade to premium"
-            style={{
-              position: "absolute",
-              top:    pY(ir, 0.905),
-              left:   pX(ir, 0.755),
-              width:  pW(ir, 0.110),
-              height: pH(ir, 0.065),
-              zIndex: 25,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          />
-
-          {/* ── SAVE circular button — covers the baked-in circle ── */}
+          {/* SAVE (centre) → open save-group modal */}
           <button
             onClick={() => { setSaveName(""); setIsSaveOpen(true); }}
             aria-label="Save current case"
             style={{
               position: "absolute",
-              top:    pY(ir, 0.9466) - pW(ir, 0.074),
-              left:   pX(ir, 0.500)  - pW(ir, 0.074),
-              width:  pW(ir, 0.148),
-              height: pW(ir, 0.148),
-              borderRadius: "50%",
-              zIndex: 26,
-              background: "linear-gradient(160deg, #E8D4B0 0%, #B8894E 100%)",
-              border: "2px solid #B8894E",
-              boxShadow: "0 2px 8px rgba(120,80,40,0.25)",
+              top:    pY(ir, LM.saveAreaY),
+              left:   pX(ir, 0.350),
+              width:  pW(ir, 0.300),
+              height: pH(ir, 0.082),
+              zIndex: 25,
+              background: "transparent",
+              border: "none",
               cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 0,
-              lineHeight: 1.15,
-              padding: 0,
             }}
-          >
-            <span style={{ fontSize: pW(ir, 0.022), fontWeight: 900, color: "#3A2210", letterSpacing: "0.06em", fontFamily: "var(--font-display)" }}>SAVE</span>
-            <span style={{ fontSize: pW(ir, 0.019), fontWeight: 800, color: "#3A2210", letterSpacing: "0.04em", fontFamily: "var(--font-display)" }}>GROUP 🤎</span>
-          </button>
+          />
+          {/* Heart (right) → Favorites */}
+          <button
+            onClick={() => navigate("/favorites")}
+            aria-label="View favourites"
+            style={{
+              position: "absolute",
+              top:    pY(ir, LM.saveAreaY),
+              left:   pX(ir, 0.650),
+              width:  pW(ir, LM.doorR - 0.650),
+              height: pH(ir, 0.082),
+              zIndex: 25,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
+          />
         </>
       )}
 
