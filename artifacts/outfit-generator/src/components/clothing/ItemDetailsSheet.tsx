@@ -6,8 +6,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, Heart, Trash2, Save, ChevronDown,
+  X, Heart, Trash2, Save, ChevronDown, Sparkles,
 } from "lucide-react";
+import { CleanUpPhotoOverlay } from "./CleanUpPhotoOverlay";
 import {
   type ClothingItem,
   type ClothingItemUpdateCategory,
@@ -150,15 +151,24 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
   const [form, setForm]           = useState<FormState | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCleanUp,       setShowCleanUp]       = useState(false);
+  // Optimistic local image URL — updated immediately when user saves from CleanUpPhotoOverlay
+  const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(
+    item?.imageObjectPath ?? null
+  );
 
   const updateItem  = useUpdateClothingItem();
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
-  // Reset form whenever item changes
+  // Reset form and local image whenever item changes
   useEffect(() => {
-    if (item) setForm(toForm(item));
+    if (item) {
+      setForm(toForm(item));
+      setDisplayImageUrl(item.imageObjectPath ?? null);
+    }
     setShowDeleteConfirm(false);
+    setShowCleanUp(false);
   }, [item?.id]);
 
   if (!item || !form) return null;
@@ -271,19 +281,32 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       </div>
 
       {/* ── Photo ── */}
-      {item.imageObjectPath && (
-        <div
-          className="w-full h-52 flex-shrink-0 border-b-2 border-black"
-          style={{
-            backgroundImage: "repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%)",
-            backgroundSize: "16px 16px",
-          }}
-        >
-          <img
-            src={getImageUrl(item.imageObjectPath)!}
-            alt={item.name}
-            className="w-full h-full object-contain"
-          />
+      {displayImageUrl && (
+        <div className="flex-shrink-0 border-b-2 border-black">
+          <div
+            className="w-full h-52"
+            style={{
+              backgroundImage: "repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%)",
+              backgroundSize: "16px 16px",
+            }}
+          >
+            <img
+              src={getImageUrl(displayImageUrl)!}
+              alt={item.name}
+              className="w-full h-full object-contain"
+            />
+          </div>
+          {/* Clean Up Photo button */}
+          <button
+            onClick={() => setShowCleanUp(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4
+                       bg-white border-t-2 border-black/10
+                       text-xs font-bold uppercase tracking-widest text-black/50
+                       hover:text-black hover:bg-primary/20 transition-all active:bg-primary/30"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Clean Up Photo
+          </button>
         </div>
       )}
 
@@ -408,6 +431,18 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           </div>
         )}
       </div>
+
+      {/* ── Clean Up Photo overlay (slides over this sheet) ── */}
+      <AnimatePresence>
+        {showCleanUp && displayImageUrl && (
+          <CleanUpPhotoOverlay
+            imageUrl={displayImageUrl}
+            itemId={item.id}
+            onClose={() => setShowCleanUp(false)}
+            onSaved={(newUrl) => setDisplayImageUrl(newUrl)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
