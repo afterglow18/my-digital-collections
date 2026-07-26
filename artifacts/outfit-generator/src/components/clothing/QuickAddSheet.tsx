@@ -515,7 +515,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                   padding: 0,
                 }}
               >
-                <div className="bg-black relative" style={{ minHeight: 176 }}>
+                <div className="relative" style={{ minHeight: 176, background: "#B8894E" }}>
                   {originalUrl && (
                     <img src={originalUrl} alt="Original"
                       className="w-full object-contain block" style={{ maxHeight: 176 }} />
