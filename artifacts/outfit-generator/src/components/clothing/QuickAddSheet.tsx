@@ -76,6 +76,30 @@ async function encodeForUpload(input: File | Blob): Promise<Blob> {
 }
 
 /**
+ * Resize a PNG blob to maxPx and return as a PNG data URL, preserving transparency.
+ * Used to shrink background-removed images before DB storage.
+ */
+async function blobToPngDataUrl(blob: Blob, maxPx = 800): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale  = Math.min(1, maxPx / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.naturalWidth  * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+/**
  * Compress a blob to a JPEG data URL at 800px max — for DB storage of originals.
  */
 async function blobToJpegDataUrl(blob: Blob): Promise<string> {
@@ -167,8 +191,8 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     try {
       let path: string;
       if (file.type === "image/png") {
-        // Preserve PNG transparency (background-removed image)
-        path = await readBlobAsDataUrl(file);
+        // Resize to 800px max while preserving transparency
+        path = await blobToPngDataUrl(file, 800);
       } else {
         // JPEG: resize to 800px and compress for storage
         path = await blobToJpegDataUrl(file);
