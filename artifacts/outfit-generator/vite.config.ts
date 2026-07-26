@@ -48,7 +48,11 @@ export default defineConfig({
       : []),
   ],
   optimizeDeps: {
-    exclude: ['@imgly/background-removal'],
+    // Both packages must be excluded from Vite's dep pre-bundling.
+    // @imgly/background-removal uses dynamic workers and WASM that break when bundled.
+    // onnxruntime-web is imported dynamically at runtime (see backgroundRemoval.ts);
+    // pre-bundling it would cause a mid-session page reload that corrupts React state.
+    exclude: ['@imgly/background-removal', 'onnxruntime-web'],
   },
   resolve: {
     alias: {
