@@ -19,19 +19,24 @@ import { removeBackground as imglyRemoveBackground } from "@imgly/background-rem
  * 3. numThreads = 1 — iOS Safari has no SharedArrayBuffer, which WASM
  *    multithreading requires. Any value > 1 causes a silent crash.
  */
-let ortReady = false;
+// Store the Promise so concurrent callers all await the same setup run,
+// rather than each seeing ortReady=false and racing to configure ORT twice.
+let ortConfigPromise: Promise<void> | null = null;
 
-async function configureOrt(): Promise<void> {
-  if (ortReady) return;
-  ortReady = true;
-  // @ts-ignore — onnxruntime-web's package.json exports block TS from resolving types via dynamic import
-  const ort = await import("onnxruntime-web");
-  Object.defineProperty(ort.env.wasm, "proxy", {
-    get: () => true,
-    set: () => {},       // block imgly's internal proxy = false write
-    configurable: true,
-  });
-  ort.env.wasm.numThreads = 1;
+function configureOrt(): Promise<void> {
+  if (!ortConfigPromise) {
+    ortConfigPromise = (async () => {
+      // @ts-ignore — onnxruntime-web's package.json exports block TS from resolving types via dynamic import
+      const ort = await import("onnxruntime-web");
+      Object.defineProperty(ort.env.wasm, "proxy", {
+        get: () => true,
+        set: () => {},       // block imgly's internal proxy = false write
+        configurable: true,
+      });
+      ort.env.wasm.numThreads = 1;
+    })();
+  }
+  return ortConfigPromise;
 }
 
 /**
