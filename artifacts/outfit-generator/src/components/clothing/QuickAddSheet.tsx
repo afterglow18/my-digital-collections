@@ -109,6 +109,94 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     onOpenChange(false);
   }, [onOpenChange]);
 
+  // ── Single-file encode + save (returns true on success) ──────────────────
+  const saveOneFile = useCallback(async (file: File | Blob, itemIndex: number): Promise<boolean> => {
+    try {
+      // Pass the original file directly to blobToDataUrl, which already
+      // resizes to 800px max and compresses to JPEG. Skipping the intermediate
+      // full-resolution PNG step avoids a large memory spike that crashes
+      // the WKWebView on iOS with high-megapixel camera photos.
+      const path     = await blobToDataUrl(file);
+      const label    = CATEGORY_LABELS[category];
+      const n        = itemIndex + 1;
+      const autoName = n === 1 ? label : `${label} ${n}`;
+      await new Promise<void>((resolve, reject) => {
+        createItem.mutate(
+          { data: { name: autoName, category, imageObjectPath: path } },
+          {
+            onSuccess: (createdItem) => {
+              queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
+              queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
+              if (onCreated) onCreated(createdItem);
+              resolve();
+            },
+            onError: reject,
+          },
+        );
+      });
+      return true;
+    } catch (err) {
+      console.error("Upload / create failed:", err);
+      return false;
+    }
+  }, [category, createItem, queryClient, onCreated]);
+
+  // ── Native gallery picker (Capacitor) ────────────────────────────────────
+  const handlePickFromGallery = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) {
+      // Browser fallback: HTML file input (multiple)
+      galleryInputRef.current?.click();
+      return;
+    }
+    try {
+      const { Camera } = await import("@capacitor/camera");
+      // pickImages supports true multi-select on iOS without WKWebView silent-drop
+      const result = await Camera.pickImages({
+        quality: 82,
+        width: 800,
+        presentationStyle: "popover",
+      });
+      const photos = result.photos;
+      if (!photos || photos.length === 0) return;
+
+      setErrorMsg(null);
+      setPhase("uploading");
+      setProgress({ current: 0, total: photos.length });
+
+      let failed = 0;
+      for (let i = 0; i < photos.length; i++) {
+        setProgress({ current: i + 1, total: photos.length });
+        // pickImages gives webPath; fetch it as a blob then run through the
+        // same resize/compress pipeline used by the camera and file-input paths.
+        // saveOneFile accepts a Blob and handles resizing + JPEG compression.
+        let ok = false;
+        try {
+          const res  = await fetch(photos[i].webPath);
+          const blob = await res.blob();
+          ok = await saveOneFile(blob, existingCount + i);
+        } catch (err) {
+          console.error("Gallery pick error for photo", i, err);
+        }
+        if (!ok) failed++;
+      }
+
+      setProgress(null);
+      if (failed > 0) {
+        setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved. Please try again.`);
+        setPhase("pick");
+      } else {
+        handleClose();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+      if (msg.includes("cancel") || msg.includes("denied") || msg.includes("user denied")) return;
+      console.error("Gallery picker error:", err);
+      setErrorMsg("Could not open photo library. Please try again.");
+      setPhase("pick");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingCount, handleClose, saveOneFile]);
+
   // ── Native camera (Capacitor) ─────────────────────────────────────────────
   const handleTakePhoto = useCallback(async () => {
     if (!Capacitor.isNativePlatform()) {
@@ -148,38 +236,6 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingCount, handleClose]);
-
-  // ── Single-file encode + save (returns true on success) ──────────────────
-  const saveOneFile = useCallback(async (file: File | Blob, itemIndex: number): Promise<boolean> => {
-    try {
-      // Pass the original file directly to blobToDataUrl, which already
-      // resizes to 800px max and compresses to JPEG. Skipping the intermediate
-      // full-resolution PNG step avoids a large memory spike that crashes
-      // the WKWebView on iOS with high-megapixel camera photos.
-      const path     = await blobToDataUrl(file);
-      const label    = CATEGORY_LABELS[category];
-      const n        = itemIndex + 1;
-      const autoName = n === 1 ? label : `${label} ${n}`;
-      await new Promise<void>((resolve, reject) => {
-        createItem.mutate(
-          { data: { name: autoName, category, imageObjectPath: path } },
-          {
-            onSuccess: (createdItem) => {
-              queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
-              queryClient.invalidateQueries({ queryKey: getWardrobeStatsQueryKey() });
-              if (onCreated) onCreated(createdItem);
-              resolve();
-            },
-            onError: reject,
-          },
-        );
-      });
-      return true;
-    } catch (err) {
-      console.error("Upload / create failed:", err);
-      return false;
-    }
-  }, [category, createItem, queryClient, onCreated]);
 
   // ── Process one or many files sequentially ────────────────────────────────
   const handleFiles = useCallback(async (files: File[]) => {
@@ -278,7 +334,7 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
                 {/* Upload Photo */}
                 <button
-                  onClick={() => galleryInputRef.current?.click()}
+                  onClick={handlePickFromGallery}
                   className="flex-1 flex flex-col items-center justify-center gap-3 py-8
                              border-4 border-black rounded-2xl bg-white
                              shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
