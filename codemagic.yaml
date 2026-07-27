@@ -105,6 +105,13 @@ workflows:
           # Declare no non-exempt encryption so TestFlight never asks
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" App/Info.plist 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" App/Info.plist
+          # Photo library — required by @capacitor/camera and any SDK that references PHPhotoLibrary
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'My Digital Collections uses your photo library so you can choose photos of items to add to your collection.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryUsageDescription 'My Digital Collections uses your photo library so you can choose photos of items to add to your collection.'" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 'My Digital Collections can save photos you take directly to your photo library.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryAddUsageDescription 'My Digital Collections can save photos you take directly to your photo library.'" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'My Digital Collections uses your camera so you can photograph items to add to your collection.'" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription 'My Digital Collections uses your camera so you can photograph items to add to your collection.'" App/Info.plist
           # Required for Face ID usage
           /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'My Digital Collections uses Face ID to protect your wardrobe.'" App/Info.plist 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :NSFaceIDUsageDescription 'My Digital Collections uses Face ID to protect your wardrobe.'" App/Info.plist
