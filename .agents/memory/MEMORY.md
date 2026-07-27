@@ -3,3 +3,4 @@
 - [Stripe integration](stripe-integration.md) — credential field name fix, checkout flow design, stripe-replit-sync warning, product seeding.
 - [Auth system](auth-system.md) — JWT/bcrypt auth, no-fallback-secret rule, ownership-before-delete pattern, single useAuth instance via context.
 - [RevenueCat seed client](revenuecat-seed-client.md) — RC connector proxy client pattern; baseUrl must be /v2; keys set as VITE_ shared env vars.
+- [ONNX Runtime Web iOS fix](ort-web-ios-fix.md) — 3-part fix for @imgly bg-removal freezing main thread: defineProperty proxy lock + numThreads=1 + dynamic import.
