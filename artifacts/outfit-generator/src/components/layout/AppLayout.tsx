@@ -69,11 +69,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                       className={cn(
                         "p-2.5 rounded-full border-2 transition-all duration-200 ease-spring relative",
                         isActive
-                          ? isNative
-                            ? "bg-[#E8D4B0] border-[#E8D4B0] shadow-none -translate-y-1"
-                            : "bg-primary border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
+                          ? "-translate-y-1"
                           : "bg-transparent border-transparent group-hover:bg-muted group-active:scale-95"
                       )}
+                      style={isActive ? {
+                        background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)",
+                        borderColor: "#C4AB72",
+                        boxShadow: isNative ? "none" : "3px 3px 0px 0px rgba(0,0,0,1)",
+                      } : undefined}
                     >
                       <Icon
                         className={cn(
