@@ -503,10 +503,10 @@ export default function GeneratePage() {
               aria-hidden="true"
               style={{
                 position: "absolute",
-                top:    pY(ir, LM.barY),
+                top:    pY(ir, LM.barY - 0.028),
                 left:   0,
                 width:  "100%",
-                height: pH(ir, LM.barBot - LM.barY),
+                height: pH(ir, LM.barBot - (LM.barY - 0.028)),
                 zIndex: 18,
                 pointerEvents: "none",
                 background: "rgba(10,8,5,0.94)",
