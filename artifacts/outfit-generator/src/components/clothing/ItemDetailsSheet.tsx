@@ -1,12 +1,11 @@
 /**
  * ItemDetailsSheet — full-screen overlay showing a clothing item's details.
  * Styled to match the dark gold luxury theme of the wardrobe/generate pages.
+ * Uses custom in-app pickers so no native iOS system UI interrupts the flow.
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X, Heart, Trash2, Save, ChevronDown, Sparkles,
-} from "lucide-react";
+import { X, Heart, Trash2, Save, Check, Sparkles, ChevronDown } from "lucide-react";
 import { CleanUpPhotoOverlay } from "./CleanUpPhotoOverlay";
 import {
   type ClothingItem,
@@ -25,46 +24,48 @@ const T = {
   bg:           "#0e0b07",
   bgCard:       "#161008",
   bgInput:      "#1a1208",
+  bgPicker:     "#1f1508",
   gold:         "#B8894E",
   goldLight:    "#E8D4B0",
-  goldFaint:    "rgba(184,137,78,0.18)",
-  goldBorder:   "rgba(184,137,78,0.30)",
-  goldBorderHi: "rgba(184,137,78,0.65)",
+  goldBorder:   "rgba(184,137,78,0.28)",
+  goldBorderHi: "rgba(184,137,78,0.60)",
   textPrimary:  "#E8D4B0",
   textMuted:    "rgba(232,212,176,0.45)",
-  textFaint:    "rgba(232,212,176,0.25)",
+  textFaint:    "rgba(232,212,176,0.22)",
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Shared field primitives ───────────────────────────────────────────────────
 
-const SEASON_OPTIONS    = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
-const OCCASION_OPTIONS  = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
-const CATEGORY_OPTIONS  = ["outfits", "beauty", "toiletries", "essentials"];
-
-const fieldStyle: React.CSSProperties = {
+const inputBase: React.CSSProperties = {
   width: "100%",
   background: T.bgInput,
   border: `1.5px solid ${T.goldBorder}`,
   borderRadius: 10,
-  padding: "9px 12px",
+  padding: "10px 12px",
   fontSize: 13,
   fontWeight: 500,
   color: T.textPrimary,
   fontFamily: "var(--font-sans)",
   outline: "none",
+  WebkitAppearance: "none",
+  MozAppearance: "none",
   appearance: "none" as const,
+  colorScheme: "dark" as const,
+  boxSizing: "border-box" as const,
 };
 
 const labelStyle: React.CSSProperties = {
   fontSize: 9,
-  fontWeight: 700,
+  fontWeight: 800,
   letterSpacing: "0.16em",
   textTransform: "uppercase" as const,
   color: T.textMuted,
   fontFamily: "var(--font-display)",
-  marginBottom: 4,
+  marginBottom: 5,
   display: "block",
 };
+
+// ── Text field ─────────────────────────────────────────────────────────────────
 
 function Field({
   label, value, onChange, placeholder, type = "text",
@@ -80,47 +81,125 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? label}
-        style={{
-          ...fieldStyle,
-          colorScheme: "dark",
-        }}
+        style={inputBase}
       />
     </div>
   );
 }
 
-function SelectField({
+// ── Custom in-app picker ───────────────────────────────────────────────────────
+// Opens an inline bottom-sheet within the scroll container. No native UI.
+
+function PickerField({
   label, value, onChange, options,
 }: {
   label: string; value: string; onChange: (v: string) => void; options: string[];
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside tap
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open]);
+
+  const display = value || `— ${label} —`;
+
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div ref={ref} style={{ display: "flex", flexDirection: "column", position: "relative" }}>
       <label style={labelStyle}>{label}</label>
-      <div style={{ position: "relative" }}>
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ ...fieldStyle, paddingRight: 30, cursor: "pointer", colorScheme: "dark" }}
-        >
-          {options.map((o) => (
-            <option key={o} value={o} style={{ background: T.bgInput, color: T.textPrimary }}>
-              {o || `— ${label} —`}
-            </option>
-          ))}
-        </select>
+
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          ...inputBase,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          cursor: "pointer", textAlign: "left",
+          border: `1.5px solid ${open ? T.goldBorderHi : T.goldBorder}`,
+          color: value ? T.textPrimary : T.textMuted,
+        }}
+      >
+        <span>{display}</span>
         <ChevronDown
           style={{
-            position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-            width: 14, height: 14, pointerEvents: "none", color: T.textMuted,
+            width: 14, height: 14, flexShrink: 0, marginLeft: 6,
+            color: T.textMuted,
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s",
           }}
         />
-      </div>
+      </button>
+
+      {/* Inline option list */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scaleY: 0.92 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -4, scaleY: 0.92 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0, right: 0,
+              zIndex: 200,
+              background: T.bgPicker,
+              border: `1.5px solid ${T.goldBorderHi}`,
+              borderRadius: 12,
+              overflow: "hidden",
+              transformOrigin: "top center",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
+            }}
+          >
+            {options.map((opt) => {
+              const isSelected = opt === value || (!value && !opt);
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => { onChange(opt); setOpen(false); }}
+                  style={{
+                    width: "100%",
+                    padding: "11px 14px",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    background: isSelected ? "rgba(184,137,78,0.12)" : "transparent",
+                    border: "none",
+                    borderBottom: `1px solid rgba(184,137,78,0.10)`,
+                    cursor: "pointer",
+                    fontSize: 13, fontWeight: isSelected ? 700 : 500,
+                    color: isSelected ? T.goldLight : T.textMuted,
+                    fontFamily: "var(--font-sans)",
+                    textAlign: "left",
+                  }}
+                >
+                  <span>{opt || `— ${label} —`}</span>
+                  {isSelected && <Check style={{ width: 13, height: 13, color: T.gold, flexShrink: 0 }} />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+const SEASON_OPTIONS   = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
+const OCCASION_OPTIONS = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
+const CATEGORY_OPTIONS = ["outfits", "beauty", "toiletries", "essentials"];
 
 interface ItemDetailsSheetProps {
   item: ClothingItem | null;
@@ -166,11 +245,13 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
   );
 }
 
+// ── Main component ─────────────────────────────────────────────────────────────
+
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
-  const [form, setForm]                             = useState<FormState | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm]   = useState(false);
-  const [showCleanUp,       setShowCleanUp]         = useState(false);
-  const [displayImageUrl, setDisplayImageUrl]       = useState<string | null>(
+  const [form, setForm]                           = useState<FormState | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCleanUp,       setShowCleanUp]       = useState(false);
+  const [displayImageUrl,   setDisplayImageUrl]   = useState<string | null>(
     item?.imageObjectPath ?? null
   );
 
@@ -253,7 +334,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     >
       {/* ── Header ── */}
       <div style={{
-        position: "sticky", top: 0, zIndex: 10, flexShrink: 0,
+        position: "sticky", top: 0, zIndex: 50, flexShrink: 0,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         paddingLeft: 16, paddingRight: 16,
         paddingTop: "max(0.75rem, env(safe-area-inset-top))",
@@ -273,7 +354,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           Item Details
         </h2>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Favourite toggle */}
+          {/* Favourite */}
           <button
             onClick={() => {
               const next = !form.isFavorite;
@@ -291,17 +372,15 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             }}
             style={{
               width: 36, height: 36, borderRadius: "50%",
-              border: `1.5px solid ${form.isFavorite ? "#c0392b" : T.goldBorder}`,
+              border: `1.5px solid ${form.isFavorite ? "rgba(231,76,60,0.5)" : T.goldBorder}`,
               background: form.isFavorite ? "rgba(192,57,43,0.18)" : T.bgCard,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer",
             }}
           >
-            <Heart
-              style={{ width: 15, height: 15 }}
+            <Heart style={{ width: 15, height: 15 }}
               fill={form.isFavorite ? "#e74c3c" : "none"}
-              stroke={form.isFavorite ? "#e74c3c" : T.textMuted}
-            />
+              stroke={form.isFavorite ? "#e74c3c" : T.textMuted} />
           </button>
           {/* Close */}
           <button
@@ -322,13 +401,12 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       {/* ── Photo ── */}
       {displayImageUrl && (
         <div style={{ flexShrink: 0, borderBottom: `1px solid ${T.goldBorder}` }}>
-          <div
-            style={{
-              width: "100%", height: 208,
-              background: "repeating-conic-gradient(rgba(184,137,78,0.07) 0% 25%, transparent 0% 50%)",
-              backgroundSize: "16px 16px",
-            }}
-          >
+          <div style={{
+            width: "100%", height: 208,
+            background:
+              "repeating-conic-gradient(rgba(184,137,78,0.07) 0% 25%, transparent 0% 50%)",
+            backgroundSize: "16px 16px",
+          }}>
             <img
               src={getImageUrl(displayImageUrl)!}
               alt={item.name}
@@ -339,16 +417,14 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             <button
               onClick={() => setShowCleanUp(true)}
               style={{
-                width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 6, padding: "10px 16px",
+                width: "100%", display: "flex", alignItems: "center",
+                justifyContent: "center", gap: 6, padding: "10px 16px",
                 background: T.bgCard,
-                borderTop: `1px solid ${T.goldBorder}`,
-                borderBottom: "none", borderLeft: "none", borderRight: "none",
+                border: "none", borderTop: `1px solid ${T.goldBorder}`,
                 cursor: "pointer",
                 fontSize: 10, fontWeight: 700,
                 letterSpacing: "0.14em", textTransform: "uppercase" as const,
-                color: T.textMuted,
-                fontFamily: "var(--font-display)",
+                color: T.textMuted, fontFamily: "var(--font-display)",
               }}
             >
               <Sparkles style={{ width: 13, height: 13 }} />
@@ -368,19 +444,33 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           onChange={patch("name") as (v: string) => void}
           placeholder="e.g. White Linen Shirt"
         />
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Brand" value={form.brand} onChange={patch("brand") as (v: string) => void} placeholder="Nike, Zara…" />
-          <Field label="Color" value={form.color} onChange={patch("color") as (v: string) => void} placeholder="Navy Blue" />
+          <Field label="Brand" value={form.brand}
+            onChange={patch("brand") as (v: string) => void} placeholder="Nike, Zara…" />
+          <Field label="Color" value={form.color}
+            onChange={patch("color") as (v: string) => void} placeholder="Navy Blue" />
         </div>
-        <Field label="Size / Volume" value={form.size} onChange={patch("size") as (v: string) => void} placeholder="30ml, 50ml, Full Size…" />
+
+        <Field label="Size / Volume" value={form.size}
+          onChange={patch("size") as (v: string) => void}
+          placeholder="30ml, 50ml, Full Size…" />
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <SelectField label="Season"   value={form.season}   onChange={patch("season") as (v: string) => void}   options={SEASON_OPTIONS} />
-          <SelectField label="Occasion" value={form.occasion} onChange={patch("occasion") as (v: string) => void} options={OCCASION_OPTIONS} />
+          <PickerField label="Season"   value={form.season}
+            onChange={patch("season") as (v: string) => void}   options={SEASON_OPTIONS} />
+          <PickerField label="Occasion" value={form.occasion}
+            onChange={patch("occasion") as (v: string) => void} options={OCCASION_OPTIONS} />
         </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Purchase Price" value={form.purchasePrice} onChange={patch("purchasePrice") as (v: string) => void} placeholder="$49.99" />
-          <Field label="Purchase Date"  value={form.purchaseDate}  onChange={patch("purchaseDate") as (v: string) => void}  type="date" />
+          <Field label="Purchase Price" value={form.purchasePrice}
+            onChange={patch("purchasePrice") as (v: string) => void} placeholder="$49.99" />
+          {/* Plain text so iOS doesn't open a native date wheel */}
+          <Field label="Purchase Date"  value={form.purchaseDate}
+            onChange={patch("purchaseDate") as (v: string) => void} placeholder="DD/MM/YY" />
         </div>
+
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label style={labelStyle}>Notes</label>
           <textarea
@@ -388,32 +478,23 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             onChange={(e) => patch("notes")(e.target.value)}
             placeholder="Anything worth remembering…"
             rows={3}
-            style={{
-              ...fieldStyle,
-              resize: "none",
-              fontFamily: "var(--font-sans)",
-            }}
+            style={{ ...inputBase, resize: "none", fontFamily: "var(--font-sans)" }}
           />
         </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <SelectField
-            label="Category" value={form.category}
-            onChange={patch("category") as (v: string) => void}
-            options={CATEGORY_OPTIONS}
-          />
-          <div style={{ display: "flex", flexDirection: "column", opacity: 0.45, pointerEvents: "none" }}>
+          <PickerField label="Category" value={form.category}
+            onChange={patch("category") as (v: string) => void} options={CATEGORY_OPTIONS} />
+          <div style={{ display: "flex", flexDirection: "column", opacity: 0.4, pointerEvents: "none" }}>
             <label style={labelStyle}>Times Worn</label>
-            <div style={{
-              ...fieldStyle,
-              color: T.textMuted,
-            }}>
+            <div style={{ ...inputBase, color: T.textMuted }}>
               {item.timesWorn ?? 0}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Footer actions ── */}
+      {/* ── Footer ── */}
       <div style={{
         position: "sticky", bottom: 0, flexShrink: 0,
         padding: "12px 16px",
@@ -422,7 +503,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         borderTop: `1px solid ${T.goldBorder}`,
         display: "flex", flexDirection: "column", gap: 8,
       }}>
-        {/* Save (only when dirty) */}
         <AnimatePresence>
           {dirty && (
             <motion.button
@@ -432,17 +512,14 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               onClick={handleSave}
               disabled={updateItem.isPending}
               style={{
-                width: "100%", padding: "13px 16px",
-                borderRadius: 12,
+                width: "100%", padding: "13px 16px", borderRadius: 12,
                 background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
                 border: `1.5px solid ${T.gold}`,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 fontSize: 12, fontWeight: 800,
                 letterSpacing: "0.10em", textTransform: "uppercase" as const,
-                color: "#3A2210",
-                fontFamily: "var(--font-display)",
-                cursor: "pointer",
-                opacity: updateItem.isPending ? 0.6 : 1,
+                color: "#3A2210", fontFamily: "var(--font-display)",
+                cursor: "pointer", opacity: updateItem.isPending ? 0.6 : 1,
               }}
             >
               <Save style={{ width: 14, height: 14 }} />
@@ -451,20 +528,17 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           )}
         </AnimatePresence>
 
-        {/* Delete */}
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
             style={{
-              width: "100%", padding: "12px 16px",
-              borderRadius: 12,
+              width: "100%", padding: "12px 16px", borderRadius: 12,
               background: "transparent",
-              border: `1.5px solid rgba(184,137,78,0.18)`,
+              border: `1.5px solid rgba(184,137,78,0.15)`,
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               fontSize: 11, fontWeight: 700,
               letterSpacing: "0.10em", textTransform: "uppercase" as const,
-              color: T.textFaint,
-              fontFamily: "var(--font-display)",
+              color: T.textFaint, fontFamily: "var(--font-display)",
               cursor: "pointer",
             }}
           >
@@ -477,30 +551,24 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               onClick={() => setShowDeleteConfirm(false)}
               style={{
                 flex: 1, padding: "12px 16px", borderRadius: 12,
-                background: T.bgCard,
-                border: `1.5px solid ${T.goldBorder}`,
+                background: T.bgCard, border: `1.5px solid ${T.goldBorder}`,
                 fontSize: 11, fontWeight: 700,
                 letterSpacing: "0.10em", textTransform: "uppercase" as const,
-                color: T.textMuted,
-                fontFamily: "var(--font-display)",
+                color: T.textMuted, fontFamily: "var(--font-display)",
                 cursor: "pointer",
               }}
-            >
-              Cancel
-            </button>
+            >Cancel</button>
             <button
               onClick={handleDelete}
               disabled={deleteItem.isPending}
               style={{
                 flex: 1, padding: "12px 16px", borderRadius: 12,
                 background: "rgba(192,57,43,0.15)",
-                border: "1.5px solid rgba(192,57,43,0.55)",
+                border: "1.5px solid rgba(192,57,43,0.50)",
                 fontSize: 11, fontWeight: 700,
                 letterSpacing: "0.10em", textTransform: "uppercase" as const,
-                color: "#e74c3c",
-                fontFamily: "var(--font-display)",
-                cursor: "pointer",
-                opacity: deleteItem.isPending ? 0.5 : 1,
+                color: "#e74c3c", fontFamily: "var(--font-display)",
+                cursor: "pointer", opacity: deleteItem.isPending ? 0.5 : 1,
               }}
             >
               {deleteItem.isPending ? "Deleting…" : "Yes, Delete"}
@@ -509,7 +577,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         )}
       </div>
 
-      {/* ── Clean Up Photo overlay ── */}
+      {/* ── Clean Up overlay ── */}
       <AnimatePresence>
         {showCleanUp && displayImageUrl && (
           <CleanUpPhotoOverlay
