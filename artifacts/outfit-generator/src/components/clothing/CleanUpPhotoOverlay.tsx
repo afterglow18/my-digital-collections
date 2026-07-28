@@ -81,6 +81,7 @@ export function CleanUpPhotoOverlay({ imageUrl, itemId, onClose, onSaved }: Prop
         const resized = await resizePng(await (await fetch(resultUrl)).blob());
         if (cancelled || !mountedRef.current) return;
         setCleanedUrl(resized);
+        setSelected("cleaned");
         setCleaning(false);
       } catch (err) {
         if (cancelled || !mountedRef.current) return;
