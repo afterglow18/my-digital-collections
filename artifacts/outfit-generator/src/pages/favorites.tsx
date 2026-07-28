@@ -35,10 +35,10 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  outfits:    "Outfits",
-  beauty:     "Beauty",
-  toiletries: "Toiletries",
-  essentials: "Essentials",
+  outfits:    "Collection 1",
+  beauty:     "Collection 2",
+  toiletries: "Collection 3",
+  essentials: "Collection 4",
 };
 
 const ORDER_KEY = "closet-favorites-order";
