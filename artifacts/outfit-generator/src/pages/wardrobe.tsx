@@ -194,14 +194,13 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
-  // Single source of truth: move LABEL_OFFSET to reposition heading + photo together.
-  // LABEL_PHOTO_GAP is the fixed space between the heading and the photo card.
-  const LABEL_OFFSET    = 0.070;
+  // Per-row heading offsets (fraction of container height below sectionTop).
+  // Edit these to move a heading. The photo always starts LABEL_PHOTO_GAP below.
+  const LABEL_OFFSETS   = [0.044, 0.068, 0.060, 0.044];
   const LABEL_PHOTO_GAP = 0.016;
-  const CAROUSEL_OFFSET = LABEL_OFFSET + LABEL_PHOTO_GAP;  // derived — never edit directly
 
   const sectionHeights = ready
-    ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
+    ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
     : LM.rows.map(() => 0);
 
   return (
@@ -285,7 +284,7 @@ export default function WardrobePage() {
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 
-            const carouselTopFrac = lm.sectionTop + CAROUSEL_OFFSET;
+            const carouselTopFrac = lm.sectionTop + LABEL_OFFSETS[rowIdx] + LABEL_PHOTO_GAP;
             const secTop  = pY(ir, carouselTopFrac);
             const secH    = pH(ir, lm.shelfY - carouselTopFrac);
             const carLeft = pX(ir, LM.doorL);
@@ -295,7 +294,7 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelY    = pY(ir, lm.sectionTop + LABEL_OFFSET);
+            const labelY    = pY(ir, lm.sectionTop + LABEL_OFFSETS[rowIdx]);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
 
