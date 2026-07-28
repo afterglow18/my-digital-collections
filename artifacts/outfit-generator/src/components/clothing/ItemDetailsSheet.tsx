@@ -427,7 +427,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
             />
           </div>
-          {!displayImageUrl.startsWith("data:image/png") && (
+          {!item.bgRemoved && !displayImageUrl.startsWith("data:image/png") && (
             <button
               onClick={() => setShowCleanUp(true)}
               style={{

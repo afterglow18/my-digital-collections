@@ -34,6 +34,7 @@ export interface StoredClothingItem {
   purchasePrice?: string | null;
   purchaseDate?:  string | null;
   notes?:         string | null;
+  bgRemoved?:     boolean;       // true once the cleaned version has been saved
   createdAt:      string;
   updatedAt:      string;
 }

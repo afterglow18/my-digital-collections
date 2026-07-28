@@ -98,7 +98,7 @@ export function CleanUpPhotoOverlay({ imageUrl, itemId, onClose, onSaved }: Prop
     const chosen = selected === "cleaned" && cleanedUrl ? cleanedUrl : imageUrl;
     onSaved(chosen);
     updateItem.mutate(
-      { id: itemId, data: { imageObjectPath: chosen } },
+      { id: itemId, data: { imageObjectPath: chosen, ...(selected === "cleaned" && cleanedUrl ? { bgRemoved: true } : {}) } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClothingQueryKey() });
