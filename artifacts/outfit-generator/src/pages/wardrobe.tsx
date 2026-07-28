@@ -291,7 +291,8 @@ export default function WardrobePage() {
             const btnH    = Math.max(32, pH(ir, 0.045));
 
             // Label sits ON the shelf bar — below the photo area, never overlapping
-            const labelY    = pY(ir, lm.shelfY);
+            const labelShift = rowIdx === 0 ? 0.014 : 0;
+            const labelY    = pY(ir, lm.shelfY + labelShift);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
 
