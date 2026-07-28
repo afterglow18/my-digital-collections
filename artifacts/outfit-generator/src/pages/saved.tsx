@@ -190,9 +190,8 @@ export default function SavedPage() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-5 border-2 border-black rounded-xl p-4" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
-          // @ts-ignore
-                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          className="mb-5 border-2 border-black rounded-xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
         >
           <p className="font-display font-bold text-sm uppercase tracking-tight">
             🔓 Lookbook is full
