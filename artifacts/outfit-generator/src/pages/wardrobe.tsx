@@ -194,7 +194,7 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
-  const CAROUSEL_OFFSET = 0.072;  // must stay above the highest label offset
+  const CAROUSEL_OFFSET = 0.086;  // must stay above the label offset + desired gap
   const sectionHeights = ready
     ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
@@ -293,7 +293,7 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelOffset = rowIdx === 1 ? 0.068 : rowIdx === 2 ? 0.060 : 0.044;
+            const labelOffset = 0.070;  // uniform — gives even heading→photo gap on every row
             const labelY    = pY(ir, lm.sectionTop + labelOffset);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
