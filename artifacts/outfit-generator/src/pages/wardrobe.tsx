@@ -353,28 +353,26 @@ export default function WardrobePage() {
                   </div>
                 )}
 
-                {/* ── ADD button ──────────────────────────────────────────
-                    Always a transparent tap zone sitting exactly over the
-                    baked-in pink pill in the background image (at btnCY).
-                    The carousel lives BELOW the pill (sectionTop > btnCY),
-                    so this zone is never obscured by items.               */}
-                {/* tap zone over shelf area for adding items */}
-                <button
-                  onClick={addHandlers[key]}
-                  aria-label={`Add to ${labelText}`}
-                  data-testid={`add-btn-${key}`}
-                  style={{
-                    position: "absolute",
-                    top:    btnCY - btnH / 2,
-                    left:   carLeft,
-                    width:  carW,
-                    height: btnH,
-                    zIndex: 22,
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                />
+                {/* ADD tap zone — only shown when shelf is empty so it never
+                    overlaps the carousel (which handles its own taps).       */}
+                {items.length === 0 && (
+                  <button
+                    onClick={addHandlers[key]}
+                    aria-label={`Add to ${labelText}`}
+                    data-testid={`add-btn-${key}`}
+                    style={{
+                      position: "absolute",
+                      top:    btnCY - btnH / 2,
+                      left:   carLeft,
+                      width:  carW,
+                      height: btnH,
+                      zIndex: 22,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
 
               </React.Fragment>
             );
