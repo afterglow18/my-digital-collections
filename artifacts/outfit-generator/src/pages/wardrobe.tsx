@@ -203,8 +203,8 @@ export default function WardrobePage() {
     ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
     : LM.rows.map(() => 0);
 
-  // All photos the same size as the bottom row
-  const basePhotoH = Math.max(0, sectionHeights[3] - 6);
+  // All photos the same uniform height — adjust multiplier to resize
+  const basePhotoH = Math.max(0, Math.round(sectionHeights[3] * 0.62));
 
   return (
     <div
