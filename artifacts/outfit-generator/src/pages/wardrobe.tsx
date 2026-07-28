@@ -204,7 +204,7 @@ export default function WardrobePage() {
     : LM.rows.map(() => 0);
 
   // All photos the same uniform height — adjust multiplier to resize
-  const basePhotoH = Math.max(0, Math.round(sectionHeights[3] * 0.62));
+  const basePhotoH = Math.max(0, Math.round(sectionHeights[3] * 0.72));
 
   return (
     <div
