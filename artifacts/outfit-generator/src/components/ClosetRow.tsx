@@ -313,9 +313,9 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   padding: 0,
                   WebkitTapHighlightColor: "transparent",
                   display: "flex",
-                  alignItems: "flex-end",
+                  alignItems: "flex-start",
                   justifyContent: "center",
-                  paddingBottom: 4,
+                  paddingTop: 4,
                   // z-index so the scaled-up center card renders above its neighbours
                   zIndex: isCenter ? 2 : 1,
                 }}
