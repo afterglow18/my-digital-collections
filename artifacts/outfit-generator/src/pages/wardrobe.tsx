@@ -290,7 +290,7 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelOffset = rowIdx === 1 ? 0.044 : rowIdx === 2 ? 0.044 : 0.032;
+            const labelOffset = rowIdx === 1 ? 0.056 : rowIdx === 2 ? 0.048 : 0.032;
             const labelY    = pY(ir, lm.sectionTop + labelOffset);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
