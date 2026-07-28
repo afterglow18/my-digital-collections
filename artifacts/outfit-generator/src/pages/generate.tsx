@@ -331,23 +331,29 @@ export default function GeneratePage() {
               return (
                 <React.Fragment key={key}>
 
-                  {/* ── Category label + pencil (tap pencil → rename) ── */}
-                  <div style={{
-                    position: "absolute",
-                    top: labelY,
-                    left: carLeft,
-                    width: carW,
-                    height: Math.ceil(fontSize * 2.2),
-                    transform: "translateY(-50%)",
-                    zIndex: 23,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    gap: 5,
-                  }}>
+                  {/* ── Category label — tap anywhere to rename ── */}
+                  <button
+                    onClick={() => setRenameKey(key as CollectionRowKey)}
+                    aria-label={`Rename ${label}`}
+                    style={{
+                      position: "absolute",
+                      top: labelY,
+                      left: carLeft,
+                      width: carW,
+                      height: Math.ceil(fontSize * 2.2),
+                      transform: "translateY(-50%)",
+                      zIndex: 23,
+                      background: "none", border: "none",
+                      cursor: "pointer", padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 5,
+                      overflow: "hidden",
+                    }}
+                  >
                     <span style={{
-                      fontSize: Math.max(9, pH(ir, 0.013)),
+                      fontSize,
                       fontWeight: 800,
                       letterSpacing: "0.12em",
                       color: "#E8D4B0",
@@ -356,30 +362,20 @@ export default function GeneratePage() {
                     }}>
                       {label}
                     </span>
-                    <button
-                      onClick={() => setRenameKey(key as CollectionRowKey)}
-                      aria-label={`Rename ${label}`}
-                      style={{
-                        background: "none", border: "none",
-                        cursor: "pointer", padding: 0,
-                        lineHeight: 0, flexShrink: 0,
-                      }}
+                    <svg
+                      width={fontSize * 0.85}
+                      height={fontSize * 0.85}
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      style={{ opacity: 0.65, flexShrink: 0 }}
                     >
-                      <svg
-                        width={Math.max(9, pH(ir, 0.013)) * 0.85}
-                        height={Math.max(9, pH(ir, 0.013)) * 0.85}
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        style={{ opacity: 0.65 }}
-                      >
-                        <path
-                          d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5Z"
-                          stroke="#E8D4B0" strokeWidth="1.4" strokeLinejoin="round"
-                        />
-                        <path d="M3 14h10" stroke="#E8D4B0" strokeWidth="1.4" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </div>
+                      <path
+                        d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L11.5 1.5Z"
+                        stroke="#E8D4B0" strokeWidth="1.4" strokeLinejoin="round"
+                      />
+                      <path d="M3 14h10" stroke="#E8D4B0" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                  </button>
 
                   {items.length > 0 ? (
                     <div
