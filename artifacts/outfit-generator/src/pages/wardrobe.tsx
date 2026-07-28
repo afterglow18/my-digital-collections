@@ -197,7 +197,7 @@ export default function WardrobePage() {
   // Per-row heading offsets (fraction of container height below sectionTop).
   // Edit these to move a heading. The photo always starts LABEL_PHOTO_GAP below.
   const LABEL_OFFSETS   = [0.044, 0.068, 0.060, 0.044];
-  const LABEL_PHOTO_GAP = 0.016;
+  const LABEL_PHOTO_GAP = 0.008;
 
   const sectionHeights = ready
     ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
