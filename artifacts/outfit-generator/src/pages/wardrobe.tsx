@@ -194,13 +194,15 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
-  const CAROUSEL_OFFSET = 0.086;  // must stay above the label offset + desired gap
+  // Single source of truth: move LABEL_OFFSET to reposition heading + photo together.
+  // LABEL_PHOTO_GAP is the fixed space between the heading and the photo card.
+  const LABEL_OFFSET    = 0.070;
+  const LABEL_PHOTO_GAP = 0.016;
+  const CAROUSEL_OFFSET = LABEL_OFFSET + LABEL_PHOTO_GAP;  // derived — never edit directly
+
   const sectionHeights = ready
     ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
-
-  // Use the average of rows 2 & 3 (indices 1 & 2) as a uniform photo height
-  const uniformPhotoH = Math.max(0, Math.round((sectionHeights[1] + sectionHeights[2]) / 2) - 8);
 
   return (
     <div
@@ -293,8 +295,7 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelOffset = 0.070;  // uniform — gives even heading→photo gap on every row
-            const labelY    = pY(ir, lm.sectionTop + labelOffset);
+            const labelY    = pY(ir, lm.sectionTop + LABEL_OFFSET);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
 
