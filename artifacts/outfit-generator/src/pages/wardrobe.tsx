@@ -194,13 +194,10 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
-  const CAROUSEL_OFFSET = 0.042;
+  const CAROUSEL_OFFSET = 0.008;
   const sectionHeights = ready
     ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
-
-  // Use the smallest row height so all carousels show photos at the same size
-  const uniformPhotoH = Math.max(0, Math.min(...sectionHeights) - 4);
 
   return (
     <div
@@ -348,7 +345,7 @@ export default function WardrobePage() {
                       items={items}
                       onCenteredItem={setCentredHandlers[key]}
                       onItemTap={handleItemTap}
-                      maxPhotoH={uniformPhotoH}
+                      maxPhotoH={sectionHeights[rowIdx]}
                     />
                   </div>
                 )}
