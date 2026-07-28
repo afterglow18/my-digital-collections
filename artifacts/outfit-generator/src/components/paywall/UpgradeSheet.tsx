@@ -160,34 +160,90 @@ export function UpgradeSheet({ reason, onClose }: Props) {
       exit={{ opacity: 0, y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 240 }}
       className="fixed inset-0 z-[80] flex flex-col max-w-md mx-auto"
-      style={{ background: "#F8F4ED" }}
+      style={{ background: "#0e0b07" }}
     >
-      {/* Close button */}
-      <div className="flex justify-end px-4 pb-0 flex-shrink-0"
-        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center
-                     bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                     active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+      {/* ── Gold plaid hero ─────────────────────────────────────────────────── */}
+      <div style={{
+        position: "relative",
+        flexShrink: 0,
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
+        paddingBottom: "1.5rem",
+        paddingLeft: "1.25rem",
+        paddingRight: "1.25rem",
+        overflow: "hidden",
+        background: "#0e0b07",
+      }}>
+        {/* Plaid SVG pattern overlay */}
+        <svg
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+          <defs>
+            <pattern id="plaid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              {/* Horizontal stripes */}
+              <rect x="0" y="0"  width="40" height="3"  fill="rgba(184,137,78,0.35)" />
+              <rect x="0" y="10" width="40" height="1"  fill="rgba(184,137,78,0.18)" />
+              <rect x="0" y="18" width="40" height="3"  fill="rgba(184,137,78,0.35)" />
+              <rect x="0" y="28" width="40" height="1"  fill="rgba(184,137,78,0.18)" />
+              {/* Vertical stripes */}
+              <rect x="0"  y="0" width="3"  height="40" fill="rgba(184,137,78,0.35)" />
+              <rect x="10" y="0" width="1"  height="40" fill="rgba(184,137,78,0.18)" />
+              <rect x="18" y="0" width="3"  height="40" fill="rgba(184,137,78,0.35)" />
+              <rect x="28" y="0" width="1"  height="40" fill="rgba(184,137,78,0.18)" />
+              {/* Intersection highlights */}
+              <rect x="0"  y="0"  width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="18" y="0"  width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="0"  y="18" width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="18" y="18" width="3" height="3" fill="rgba(232,212,176,0.55)" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#plaid)" />
+        </svg>
 
-      {/* Content — fills remaining height, no scroll */}
-      <div className="flex-1 min-h-0 flex flex-col justify-between px-5 pt-3 pb-2">
+        {/* Close button */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem", position: "relative", zIndex: 2 }}>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              border: "1.5px solid rgba(184,137,78,0.6)",
+              background: "rgba(14,11,7,0.7)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            <X style={{ width: 16, height: 16, color: "#E8D4B0" }} />
+          </button>
+        </div>
 
         {/* Headline */}
-        <div>
-          <h1 className="font-display font-bold text-[2.1rem] uppercase tracking-tight leading-[0.88]">
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <h1 style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 800,
+            fontSize: "2rem",
+            textTransform: "uppercase",
+            letterSpacing: "-0.01em",
+            lineHeight: 0.9,
+            color: "#E8D4B0",
+            margin: 0,
+          }}>
             {HEADLINES[reason]}
           </h1>
-          <p className="text-xs font-semibold text-black/45 mt-1.5" style={{ whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: "0.72rem", fontWeight: 600, color: "rgba(232,212,176,0.55)", marginTop: "0.5rem", whiteSpace: "pre-line" }}>
             {SUBTITLES[reason]}
           </p>
         </div>
+      </div>
+
+      {/* Content — fills remaining height, no scroll */}
+      <div className="flex-1 min-h-0 flex flex-col justify-between px-5 pt-3 pb-2"
+           style={{ background: "#0e0b07" }}>
+
+        {/* Spacer — headline moved to hero above */}
+        <div />
 
         {/* Features card */}
         <div className="rounded-2xl border-[3px] border-black overflow-hidden" style={{ background: "#111" }}>
