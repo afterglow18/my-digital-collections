@@ -90,13 +90,21 @@ function Field({
 // ── Custom in-app picker ───────────────────────────────────────────────────────
 // Opens an inline bottom-sheet within the scroll container. No native UI.
 
+interface PickerOption { label: string; value: string; }
+
 function PickerField({
   label, value, onChange, options,
 }: {
-  label: string; value: string; onChange: (v: string) => void; options: string[];
+  label: string; value: string; onChange: (v: string) => void;
+  options: (string | PickerOption)[];
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Normalise options to {label, value}
+  const normalised: PickerOption[] = options.map((o) =>
+    typeof o === "string" ? { label: o, value: o } : o
+  );
 
   // Close on outside tap
   useEffect(() => {
@@ -112,7 +120,8 @@ function PickerField({
     };
   }, [open]);
 
-  const display = value || `— ${label} —`;
+  const selected = normalised.find((o) => o.value === value);
+  const display  = selected ? selected.label : `— ${label} —`;
 
   return (
     <div ref={ref} style={{ display: "flex", flexDirection: "column", position: "relative" }}>
@@ -162,29 +171,29 @@ function PickerField({
               boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
             }}
           >
-            {options.map((opt) => {
-              const isSelected = opt === value || (!value && !opt);
+            {normalised.map((opt) => {
+              const isSel = opt.value === value || (!value && !opt.value);
               return (
                 <button
-                  key={opt}
+                  key={opt.value}
                   type="button"
-                  onClick={() => { onChange(opt); setOpen(false); }}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
                   style={{
                     width: "100%",
                     padding: "11px 14px",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    background: isSelected ? "rgba(184,137,78,0.12)" : "transparent",
+                    background: isSel ? "rgba(184,137,78,0.12)" : "transparent",
                     border: "none",
                     borderBottom: `1px solid rgba(184,137,78,0.10)`,
                     cursor: "pointer",
-                    fontSize: 13, fontWeight: isSelected ? 700 : 500,
-                    color: isSelected ? T.goldLight : T.textMuted,
+                    fontSize: 13, fontWeight: isSel ? 700 : 500,
+                    color: isSel ? T.goldLight : T.textMuted,
                     fontFamily: "var(--font-sans)",
                     textAlign: "left",
                   }}
                 >
-                  <span>{opt || `— ${label} —`}</span>
-                  {isSelected && <Check style={{ width: 13, height: 13, color: T.gold, flexShrink: 0 }} />}
+                  <span>{opt.label || `— ${label} —`}</span>
+                  {isSel && <Check style={{ width: 13, height: 13, color: T.gold, flexShrink: 0 }} />}
                 </button>
               );
             })}
@@ -199,7 +208,12 @@ function PickerField({
 
 const SEASON_OPTIONS   = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
 const OCCASION_OPTIONS = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
-const CATEGORY_OPTIONS = ["outfits", "beauty", "toiletries", "essentials"];
+const CATEGORY_OPTIONS: { label: string; value: string }[] = [
+  { label: "Collection 1", value: "outfits" },
+  { label: "Collection 2", value: "beauty" },
+  { label: "Collection 3", value: "toiletries" },
+  { label: "Collection 4", value: "essentials" },
+];
 
 interface ItemDetailsSheetProps {
   item: ClothingItem | null;
@@ -467,7 +481,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           <Field label="Purchase Price" value={form.purchasePrice}
             onChange={patch("purchasePrice") as (v: string) => void} placeholder="$49.99" />
           {/* Plain text so iOS doesn't open a native date wheel */}
-          <Field label="Purchase Date"  value={form.purchaseDate}
+          <Field label="Date"  value={form.purchaseDate}
             onChange={patch("purchaseDate") as (v: string) => void} placeholder="DD/MM/YY" />
         </div>
 
