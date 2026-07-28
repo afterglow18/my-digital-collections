@@ -345,7 +345,7 @@ export default function WardrobePage() {
                       width:  carW,
                       height: secH,
                       zIndex: 10,
-                      overflow: "hidden",
+                      overflow: "visible",
                     }}
                   >
                     <ClosetRow
