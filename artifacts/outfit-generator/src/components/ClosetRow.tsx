@@ -315,7 +315,7 @@ export const ClosetRow = forwardRef<ClosetRowHandle, ClosetRowProps>(
                   display: "flex",
                   alignItems: "flex-start",
                   justifyContent: "center",
-                  paddingTop: 4,
+                  paddingTop: 10,
                   // z-index so the scaled-up center card renders above its neighbours
                   zIndex: isCenter ? 2 : 1,
                 }}
