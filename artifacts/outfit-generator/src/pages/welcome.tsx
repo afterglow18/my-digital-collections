@@ -283,10 +283,11 @@ export default function WelcomePage({ onEnter }: Props) {
           fontFamily: "var(--font-display, serif)",
           fontWeight: 900,
           fontSize: "clamp(20px, 6.5vw, 34px)",
-          letterSpacing: "-0.02em",
-          lineHeight: 1.08,
+          letterSpacing: "0.08em",
+          lineHeight: 1.1,
           color: "#E8D4B0",
           textAlign: "center",
+          textTransform: "uppercase" as const,
         }}>
           MY DIGITAL<br />COLLECTIONS
         </div>

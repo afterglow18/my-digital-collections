@@ -1,7 +1,6 @@
 /**
  * ItemDetailsSheet — full-screen overlay showing a clothing item's details.
- * Every field is optional and editable. A "Save" button appears only when
- * the form is dirty. Delete is always available.
+ * Styled to match the dark gold luxury theme of the wardrobe/generate pages.
  */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,74 +20,101 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { getImageUrl } from "@/lib/utils";
 
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const T = {
+  bg:           "#0e0b07",
+  bgCard:       "#161008",
+  bgInput:      "#1a1208",
+  gold:         "#B8894E",
+  goldLight:    "#E8D4B0",
+  goldFaint:    "rgba(184,137,78,0.18)",
+  goldBorder:   "rgba(184,137,78,0.30)",
+  goldBorderHi: "rgba(184,137,78,0.65)",
+  textPrimary:  "#E8D4B0",
+  textMuted:    "rgba(232,212,176,0.45)",
+  textFaint:    "rgba(232,212,176,0.25)",
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const SEASON_OPTIONS    = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
 const OCCASION_OPTIONS  = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
 const CATEGORY_OPTIONS  = ["outfits", "beauty", "toiletries", "essentials"];
 
+const fieldStyle: React.CSSProperties = {
+  width: "100%",
+  background: T.bgInput,
+  border: `1.5px solid ${T.goldBorder}`,
+  borderRadius: 10,
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 500,
+  color: T.textPrimary,
+  fontFamily: "var(--font-sans)",
+  outline: "none",
+  appearance: "none" as const,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase" as const,
+  color: T.textMuted,
+  fontFamily: "var(--font-display)",
+  marginBottom: 4,
+  display: "block",
+};
+
 function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
+  label, value, onChange, placeholder, type = "text",
 }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
+  label: string; value: string; onChange: (v: string) => void;
+  placeholder?: string; type?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">
-        {label}
-      </label>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label style={labelStyle}>{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? label}
-        className="w-full border-2 border-black rounded-lg px-3 py-2 text-sm font-medium
-                   bg-white focus:outline-none focus:ring-2 focus:ring-primary
-                   placeholder:font-normal placeholder:text-black/25"
+        style={{
+          ...fieldStyle,
+          colorScheme: "dark",
+        }}
       />
     </div>
   );
 }
 
 function SelectField({
-  label,
-  value,
-  onChange,
-  options,
+  label, value, onChange, options,
 }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
+  label: string; value: string; onChange: (v: string) => void; options: string[];
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">
-        {label}
-      </label>
-      <div className="relative">
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label style={labelStyle}>{label}</label>
+      <div style={{ position: "relative" }}>
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none border-2 border-black rounded-lg px-3 py-2 pr-8
-                     text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary
-                     cursor-pointer"
+          style={{ ...fieldStyle, paddingRight: 30, cursor: "pointer", colorScheme: "dark" }}
         >
           {options.map((o) => (
-            <option key={o} value={o}>
+            <option key={o} value={o} style={{ background: T.bgInput, color: T.textPrimary }}>
               {o || `— ${label} —`}
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-black/40" />
+        <ChevronDown
+          style={{
+            position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+            width: 14, height: 14, pointerEvents: "none", color: T.textMuted,
+          }}
+        />
       </div>
     </div>
   );
@@ -103,17 +129,9 @@ interface ItemDetailsSheetProps {
 }
 
 interface FormState {
-  name: string;
-  brand: string;
-  color: string;
-  size: string;
-  season: string;
-  occasion: string;
-  purchasePrice: string;
-  purchaseDate: string;
-  notes: string;
-  isFavorite: boolean;
-  category: string;
+  name: string; brand: string; color: string; size: string;
+  season: string; occasion: string; purchasePrice: string;
+  purchaseDate: string; notes: string; isFavorite: boolean; category: string;
 }
 
 function toForm(item: ClothingItem): FormState {
@@ -149,11 +167,10 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
 }
 
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
-  const [form, setForm]           = useState<FormState | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCleanUp,       setShowCleanUp]       = useState(false);
-  // Optimistic local image URL — updated immediately when user saves from CleanUpPhotoOverlay
-  const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(
+  const [form, setForm]                             = useState<FormState | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm]   = useState(false);
+  const [showCleanUp,       setShowCleanUp]         = useState(false);
+  const [displayImageUrl, setDisplayImageUrl]       = useState<string | null>(
     item?.imageObjectPath ?? null
   );
 
@@ -161,7 +178,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
-  // Reset form and local image whenever item changes
   useEffect(() => {
     if (item) {
       setForm(toForm(item));
@@ -174,7 +190,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   if (!item || !form) return null;
 
   const dirty = isDirty(form, item);
-
   const patch = (key: keyof FormState) => (value: string | boolean) =>
     setForm((prev) => prev ? { ...prev, [key]: value } : prev);
 
@@ -183,8 +198,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       {
         id: item.id,
         data: {
-          // Always send every editable field so the backend can clear it when empty.
-          // Backend converts "" → null in DB.
           name:          form.name.trim() || item.name,
           brand:         form.brand.trim(),
           color:         form.color.trim(),
@@ -230,17 +243,37 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 240 }}
-      className="fixed inset-0 z-[65] flex flex-col max-w-md mx-auto bg-[#f9f4ee] overflow-y-auto"
+      style={{
+        position: "fixed", inset: 0, zIndex: 65,
+        display: "flex", flexDirection: "column",
+        maxWidth: 448, margin: "0 auto",
+        background: T.bg,
+        overflowY: "auto",
+      }}
     >
       {/* ── Header ── */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-4
-                      bg-white border-b-2 border-black flex-shrink-0"
-        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
-        <h2 className="font-display font-bold text-xl uppercase tracking-tight">
+      <div style={{
+        position: "sticky", top: 0, zIndex: 10, flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        paddingLeft: 16, paddingRight: 16,
+        paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+        paddingBottom: "0.75rem",
+        background: T.bg,
+        borderBottom: `1px solid ${T.goldBorder}`,
+      }}>
+        <h2 style={{
+          fontFamily: "var(--font-display)",
+          fontWeight: 800,
+          fontSize: 16,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: T.textPrimary,
+          margin: 0,
+        }}>
           Item Details
         </h2>
-        <div className="flex items-center gap-2">
-          {/* Favourite toggle — saves instantly */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* Favourite toggle */}
           <button
             onClick={() => {
               const next = !form.isFavorite;
@@ -256,56 +289,69 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 }
               );
             }}
-            className={`w-9 h-9 border-2 border-black rounded-full flex items-center justify-center transition-all
-                        ${form.isFavorite
-                          ? "bg-red-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                          : "bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"}`}
-            title="Favourite"
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              border: `1.5px solid ${form.isFavorite ? "#c0392b" : T.goldBorder}`,
+              background: form.isFavorite ? "rgba(192,57,43,0.18)" : T.bgCard,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
           >
             <Heart
-              className="w-4 h-4"
-              fill={form.isFavorite ? "white" : "none"}
-              stroke={form.isFavorite ? "white" : "currentColor"}
+              style={{ width: 15, height: 15 }}
+              fill={form.isFavorite ? "#e74c3c" : "none"}
+              stroke={form.isFavorite ? "#e74c3c" : T.textMuted}
             />
           </button>
           {/* Close */}
           <button
             onClick={onClose}
-            className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center
-                       bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                       active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              border: `1.5px solid ${T.goldBorder}`,
+              background: T.bgCard,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
           >
-            <X className="w-4 h-4" />
+            <X style={{ width: 15, height: 15, color: T.textMuted }} />
           </button>
         </div>
       </div>
 
       {/* ── Photo ── */}
       {displayImageUrl && (
-        <div className="flex-shrink-0 border-b-2 border-black">
+        <div style={{ flexShrink: 0, borderBottom: `1px solid ${T.goldBorder}` }}>
           <div
-            className="w-full h-52"
             style={{
-              backgroundImage: "repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%)",
+              width: "100%", height: 208,
+              background: "repeating-conic-gradient(rgba(184,137,78,0.07) 0% 25%, transparent 0% 50%)",
               backgroundSize: "16px 16px",
             }}
           >
             <img
               src={getImageUrl(displayImageUrl)!}
               alt={item.name}
-              className="w-full h-full object-contain"
+              style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
             />
           </div>
-          {/* Clean Up Photo — hidden once the image is already a cleaned PNG */}
           {!displayImageUrl.startsWith("data:image/png") && (
             <button
               onClick={() => setShowCleanUp(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4
-                         bg-white border-t-2 border-black/10
-                         text-xs font-bold uppercase tracking-widest text-black/50
-                         hover:text-black hover:bg-primary/20 transition-all active:bg-primary/30"
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+                gap: 6, padding: "10px 16px",
+                background: T.bgCard,
+                borderTop: `1px solid ${T.goldBorder}`,
+                borderBottom: "none", borderLeft: "none", borderRight: "none",
+                cursor: "pointer",
+                fontSize: 10, fontWeight: 700,
+                letterSpacing: "0.14em", textTransform: "uppercase" as const,
+                color: T.textMuted,
+                fontFamily: "var(--font-display)",
+              }}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles style={{ width: 13, height: 13 }} />
               Clean Up Photo
             </button>
           )}
@@ -313,74 +359,69 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       )}
 
       {/* ── Form ── */}
-      <div className="flex-1 px-4 py-5 flex flex-col gap-4">
-
-        {/* Name */}
+      <div style={{
+        flex: 1, padding: "20px 16px",
+        display: "flex", flexDirection: "column", gap: 16,
+      }}>
         <Field
-          label="Item Name"
-          value={form.name}
+          label="Item Name" value={form.name}
           onChange={patch("name") as (v: string) => void}
           placeholder="e.g. White Linen Shirt"
         />
-
-        {/* Brand + Color */}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Brand"  value={form.brand} onChange={patch("brand") as (v: string) => void} placeholder="Nike, Zara…" />
-          <Field label="Color"  value={form.color} onChange={patch("color") as (v: string) => void} placeholder="Navy Blue" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <Field label="Brand" value={form.brand} onChange={patch("brand") as (v: string) => void} placeholder="Nike, Zara…" />
+          <Field label="Color" value={form.color} onChange={patch("color") as (v: string) => void} placeholder="Navy Blue" />
         </div>
-
-        {/* Size */}
         <Field label="Size / Volume" value={form.size} onChange={patch("size") as (v: string) => void} placeholder="30ml, 50ml, Full Size…" />
-
-        {/* Season + Occasion */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <SelectField label="Season"   value={form.season}   onChange={patch("season") as (v: string) => void}   options={SEASON_OPTIONS} />
           <SelectField label="Occasion" value={form.occasion} onChange={patch("occasion") as (v: string) => void} options={OCCASION_OPTIONS} />
         </div>
-
-        {/* Price + Date */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <Field label="Purchase Price" value={form.purchasePrice} onChange={patch("purchasePrice") as (v: string) => void} placeholder="$49.99" />
           <Field label="Purchase Date"  value={form.purchaseDate}  onChange={patch("purchaseDate") as (v: string) => void}  type="date" />
         </div>
-
-        {/* Notes */}
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">
-            Notes
-          </label>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label style={labelStyle}>Notes</label>
           <textarea
             value={form.notes}
             onChange={(e) => patch("notes")(e.target.value)}
             placeholder="Anything worth remembering…"
             rows={3}
-            className="w-full border-2 border-black rounded-lg px-3 py-2 text-sm font-medium
-                       bg-white focus:outline-none focus:ring-2 focus:ring-primary resize-none
-                       placeholder:font-normal placeholder:text-black/25"
+            style={{
+              ...fieldStyle,
+              resize: "none",
+              fontFamily: "var(--font-sans)",
+            }}
           />
         </div>
-
-        {/* Category (editable) + Times Worn (read-only) */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <SelectField
-            label="Category"
-            value={form.category}
+            label="Category" value={form.category}
             onChange={patch("category") as (v: string) => void}
             options={CATEGORY_OPTIONS}
           />
-          <div className="flex flex-col gap-1 opacity-50 pointer-events-none">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">Times Worn</span>
-            <div className="border-2 border-black/20 rounded-lg px-3 py-2 text-sm font-medium bg-white/50">
+          <div style={{ display: "flex", flexDirection: "column", opacity: 0.45, pointerEvents: "none" }}>
+            <label style={labelStyle}>Times Worn</label>
+            <div style={{
+              ...fieldStyle,
+              color: T.textMuted,
+            }}>
               {item.timesWorn ?? 0}
             </div>
           </div>
         </div>
-
       </div>
 
       {/* ── Footer actions ── */}
-      <div className="sticky bottom-0 px-4 py-4 bg-white border-t-2 border-black flex-shrink-0 flex flex-col gap-2">
-
+      <div style={{
+        position: "sticky", bottom: 0, flexShrink: 0,
+        padding: "12px 16px",
+        paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+        background: T.bg,
+        borderTop: `1px solid ${T.goldBorder}`,
+        display: "flex", flexDirection: "column", gap: 8,
+      }}>
         {/* Save (only when dirty) */}
         <AnimatePresence>
           {dirty && (
@@ -390,9 +431,21 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               exit={{ opacity: 0, y: 8 }}
               onClick={handleSave}
               disabled={updateItem.isPending}
-              className="w-full btn-brutalist py-3 rounded-xl flex items-center justify-center gap-2 text-sm"
+              style={{
+                width: "100%", padding: "13px 16px",
+                borderRadius: 12,
+                background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
+                border: `1.5px solid ${T.gold}`,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                fontSize: 12, fontWeight: 800,
+                letterSpacing: "0.10em", textTransform: "uppercase" as const,
+                color: "#3A2210",
+                fontFamily: "var(--font-display)",
+                cursor: "pointer",
+                opacity: updateItem.isPending ? 0.6 : 1,
+              }}
             >
-              <Save className="w-4 h-4" />
+              <Save style={{ width: 14, height: 14 }} />
               {updateItem.isPending ? "Saving…" : "Save Changes"}
             </motion.button>
           )}
@@ -402,39 +455,61 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm
-                       font-bold uppercase border-2 border-black/20 text-black/35
-                       hover:border-red-500 hover:text-red-600 transition-all"
+            style={{
+              width: "100%", padding: "12px 16px",
+              borderRadius: 12,
+              background: "transparent",
+              border: `1.5px solid rgba(184,137,78,0.18)`,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              fontSize: 11, fontWeight: 700,
+              letterSpacing: "0.10em", textTransform: "uppercase" as const,
+              color: T.textFaint,
+              fontFamily: "var(--font-display)",
+              cursor: "pointer",
+            }}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 style={{ width: 13, height: 13 }} />
             Delete from Collection Forever
           </button>
         ) : (
-          <div className="flex gap-2">
+          <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-black bg-white
-                         shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                         active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+              style={{
+                flex: 1, padding: "12px 16px", borderRadius: 12,
+                background: T.bgCard,
+                border: `1.5px solid ${T.goldBorder}`,
+                fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.10em", textTransform: "uppercase" as const,
+                color: T.textMuted,
+                fontFamily: "var(--font-display)",
+                cursor: "pointer",
+              }}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
               disabled={deleteItem.isPending}
-              className="flex-1 py-3 rounded-xl text-sm font-bold uppercase border-2 border-red-600
-                         bg-red-500 text-white
-                         shadow-[2px_2px_0px_0px_rgba(185,28,28,1)]
-                         active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all
-                         disabled:opacity-50"
+              style={{
+                flex: 1, padding: "12px 16px", borderRadius: 12,
+                background: "rgba(192,57,43,0.15)",
+                border: "1.5px solid rgba(192,57,43,0.55)",
+                fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.10em", textTransform: "uppercase" as const,
+                color: "#e74c3c",
+                fontFamily: "var(--font-display)",
+                cursor: "pointer",
+                opacity: deleteItem.isPending ? 0.5 : 1,
+              }}
             >
-              {deleteItem.isPending ? "Deleting…" : "Yes, Delete Forever"}
+              {deleteItem.isPending ? "Deleting…" : "Yes, Delete"}
             </button>
           </div>
         )}
       </div>
 
-      {/* ── Clean Up Photo overlay (slides over this sheet) ── */}
+      {/* ── Clean Up Photo overlay ── */}
       <AnimatePresence>
         {showCleanUp && displayImageUrl && (
           <CleanUpPhotoOverlay
