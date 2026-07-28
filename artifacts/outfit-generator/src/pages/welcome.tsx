@@ -196,56 +196,68 @@ export default function WelcomePage({ onEnter }: Props) {
             }} />
           </motion.div>
 
-          {/* ── Keyhole — centred on the door seam ── */}
-          <motion.div
-            style={{
-              position: "absolute",
-              bottom: "13%", left: "50%",
-              x: "-50%", zIndex: 5,
-            }}
-            animate={{ opacity: isOpening ? 0 : 1 }}
-            transition={{ duration: 0.18 }}
-          >
-            <svg width="18" height="26" viewBox="0 0 18 26" fill="none">
-              <circle cx="9" cy="7.5" r="5.5" fill="rgba(0,0,0,0.95)" stroke="rgba(184,137,78,0.65)" strokeWidth="1.5" />
-              <path d="M6 13 L7 22 L11 22 L12 13 Z" fill="rgba(0,0,0,0.95)" stroke="rgba(184,137,78,0.55)" strokeWidth="1" strokeLinejoin="round" />
-            </svg>
-          </motion.div>
-
-          {/* ── Key — appears and rotates during unlock ── */}
-          <motion.div
-            style={{
-              position: "absolute",
-              bottom: "9%", left: "50%",
-              x: "-50%",
-              transformOrigin: "50% 100%",
-              zIndex: 6,
-            }}
-            animate={
-              phase === "unlocking"
-                ? { opacity: 1, rotate: [0, -25, 360], transition: { duration: 0.78, ease: [0.4, 0, 0.2, 1] } }
-                : phase === "locked"
-                ? { opacity: 1, rotate: 0 }
-                : { opacity: 0, rotate: 360 }
-            }
-          >
-            <svg width="44" height="66" viewBox="0 0 44 66" fill="none">
-              {/* Glow behind bow */}
-              <circle cx="22" cy="14" r="14" fill="rgba(184,137,78,0.18)" />
-              {/* Bow (head) */}
-              <circle cx="22" cy="14" r="12" fill="#B8894E" stroke="#E8D4B0" strokeWidth="2" />
-              <circle cx="22" cy="14" r="6.5" fill="#0a0806" />
-              {/* Highlight on bow */}
-              <circle cx="18" cy="10" r="2.5" fill="rgba(232,212,176,0.35)" />
-              {/* Shaft */}
-              <rect x="19.5" y="26" width="5" height="26" rx="2.5" fill="#B8894E" />
-              {/* Teeth */}
-              <rect x="24.5" y="36" width="8" height="4" rx="2" fill="#B8894E" />
-              <rect x="24.5" y="44" width="6" height="4" rx="2" fill="#B8894E" />
-              <rect x="24.5" y="52" width="4" height="4" rx="2" fill="#B8894E" />
-            </svg>
-          </motion.div>
         </div>
+
+        {/* ── Keyhole — outside the 3D container so z-index works ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            bottom: "12%", left: "50%",
+            x: "-50%", zIndex: 20,
+            pointerEvents: "none",
+          }}
+          animate={{ opacity: isOpening ? 0 : 1 }}
+          transition={{ duration: 0.18 }}
+        >
+          <svg width="22" height="32" viewBox="0 0 22 32" fill="none">
+            <circle cx="11" cy="9" r="7" fill="rgba(0,0,0,0.97)" stroke="#B8894E" strokeWidth="2" />
+            <path d="M7.5 16 L9 28 L13 28 L14.5 16 Z" fill="rgba(0,0,0,0.97)" stroke="#B8894E" strokeWidth="1.5" strokeLinejoin="round" />
+          </svg>
+        </motion.div>
+
+        {/* ── Key — outside 3D container, always visible when locked ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            bottom: "7%", left: "50%",
+            x: "-50%",
+            transformOrigin: "50% 100%",
+            zIndex: 20,
+          }}
+          animate={
+            phase === "unlocking"
+              ? { opacity: 1, rotate: [0, -30, 360], transition: { duration: 0.78, ease: [0.4, 0, 0.2, 1] } }
+              : phase === "locked"
+              ? { opacity: 1, rotate: 0 }
+              : { opacity: 0, rotate: 360 }
+          }
+        >
+          {/* Outer glow */}
+          <div style={{
+            position: "absolute", inset: -8,
+            borderRadius: "50%",
+            background: "radial-gradient(ellipse, rgba(184,137,78,0.25) 0%, transparent 70%)",
+            filter: "blur(6px)",
+          }} />
+          <svg width="52" height="78" viewBox="0 0 52 78" fill="none">
+            {/* Glow halo on bow */}
+            <circle cx="26" cy="17" r="18" fill="rgba(184,137,78,0.15)" />
+            {/* Bow outer ring */}
+            <circle cx="26" cy="17" r="15" fill="#8B6535" stroke="#E8D4B0" strokeWidth="2.5" />
+            {/* Bow face */}
+            <circle cx="26" cy="17" r="11" fill="#B8894E" />
+            {/* Bow hole */}
+            <circle cx="26" cy="17" r="5.5" fill="#0a0806" />
+            {/* Highlight */}
+            <circle cx="21" cy="12" r="3" fill="rgba(232,212,176,0.4)" />
+            {/* Shaft */}
+            <rect x="23" y="32" width="6" height="30" rx="3" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
+            {/* Teeth */}
+            <rect x="29" y="42" width="10" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
+            <rect x="29" y="51" width="7.5" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
+            <rect x="29" y="60" width="5" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
+          </svg>
+        </motion.div>
 
         {/* Bottom gold trim bar */}
         <div style={{
