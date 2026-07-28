@@ -199,6 +199,9 @@ export default function WardrobePage() {
     ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
 
+  // Use the average of rows 2 & 3 (indices 1 & 2) as a uniform photo height
+  const uniformPhotoH = Math.max(0, Math.round((sectionHeights[1] + sectionHeights[2]) / 2) - 8);
+
   return (
     <div
       ref={containerRef}
@@ -345,7 +348,7 @@ export default function WardrobePage() {
                       items={items}
                       onCenteredItem={setCentredHandlers[key]}
                       onItemTap={handleItemTap}
-                      maxPhotoH={Math.max(0, sectionHeights[rowIdx] - 8)}
+                      maxPhotoH={uniformPhotoH}
                     />
                   </div>
                 )}
