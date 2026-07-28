@@ -225,19 +225,24 @@ export default function WelcomePage({ onEnter }: Props) {
               phase === "unlocking"
                 ? { opacity: 1, rotate: [0, -25, 360], transition: { duration: 0.78, ease: [0.4, 0, 0.2, 1] } }
                 : phase === "locked"
-                ? { opacity: 0, rotate: 0 }
+                ? { opacity: 1, rotate: 0 }
                 : { opacity: 0, rotate: 360 }
             }
           >
-            <svg width="30" height="46" viewBox="0 0 30 46" fill="none">
+            <svg width="44" height="66" viewBox="0 0 44 66" fill="none">
+              {/* Glow behind bow */}
+              <circle cx="22" cy="14" r="14" fill="rgba(184,137,78,0.18)" />
               {/* Bow (head) */}
-              <circle cx="15" cy="9.5" r="8.5" fill="#B8894E" stroke="#E8D4B0" strokeWidth="1.5" />
-              <circle cx="15" cy="9.5" r="4.5" fill="#0a0806" />
+              <circle cx="22" cy="14" r="12" fill="#B8894E" stroke="#E8D4B0" strokeWidth="2" />
+              <circle cx="22" cy="14" r="6.5" fill="#0a0806" />
+              {/* Highlight on bow */}
+              <circle cx="18" cy="10" r="2.5" fill="rgba(232,212,176,0.35)" />
               {/* Shaft */}
-              <rect x="13" y="18" width="4" height="18" rx="2" fill="#B8894E" />
+              <rect x="19.5" y="26" width="5" height="26" rx="2.5" fill="#B8894E" />
               {/* Teeth */}
-              <rect x="17" y="26" width="6" height="3" rx="1.5" fill="#B8894E" />
-              <rect x="17" y="32" width="4" height="3" rx="1.5" fill="#B8894E" />
+              <rect x="24.5" y="36" width="8" height="4" rx="2" fill="#B8894E" />
+              <rect x="24.5" y="44" width="6" height="4" rx="2" fill="#B8894E" />
+              <rect x="24.5" y="52" width="4" height="4" rx="2" fill="#B8894E" />
             </svg>
           </motion.div>
         </div>
