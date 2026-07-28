@@ -25,16 +25,26 @@ const STORAGE_KEY = "collection-names-v1";
 
 // ── Module-level store so all hook instances share one source of truth ─────────
 
+// Map any old default "COLLECTION N" names → new "ROW N" defaults
+const LEGACY_MAP: Record<string, string> = {
+  "COLLECTION 1": "ROW 1",
+  "COLLECTION 2": "ROW 2",
+  "COLLECTION 3": "ROW 3",
+  "COLLECTION 4": "ROW 4",
+};
+
 function readStorage(): Record<RowKey, string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULTS };
     const parsed = JSON.parse(raw) as Partial<Record<RowKey, string>>;
+    const migrate = (v: string | undefined, def: string) =>
+      LEGACY_MAP[v ?? ""] ?? v ?? def;
     return {
-      outfits:    parsed.outfits    || DEFAULTS.outfits,
-      beauty:     parsed.beauty     || DEFAULTS.beauty,
-      toiletries: parsed.toiletries || DEFAULTS.toiletries,
-      essentials: parsed.essentials || DEFAULTS.essentials,
+      outfits:    migrate(parsed.outfits,    DEFAULTS.outfits),
+      beauty:     migrate(parsed.beauty,     DEFAULTS.beauty),
+      toiletries: migrate(parsed.toiletries, DEFAULTS.toiletries),
+      essentials: migrate(parsed.essentials, DEFAULTS.essentials),
     };
   } catch {
     return { ...DEFAULTS };
