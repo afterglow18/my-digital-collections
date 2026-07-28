@@ -310,11 +310,16 @@ export default function WardrobePage() {
                     top: labelY,
                     left: carLeft,
                     width: carW,
+                    height: Math.ceil(fontSize * 2.2),
                     transform: "translateY(-50%)",
                     zIndex: 23,
                     background: "none", border: "none",
                     cursor: "pointer", padding: 0,
                     textAlign: "center",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
                   <span style={{
