@@ -31,7 +31,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border-[3px] border-black rounded-2xl overflow-hidden">
+    <div className="border-[3px] border-black rounded-2xl overflow-hidden" style={{ background: "#EBD9A8" }}>
       {/* Header row */}
       <div className="flex items-center gap-2 px-4 py-3 border-b-[3px] border-black">
         <span className="text-xl leading-none">{emoji}</span>
@@ -61,7 +61,7 @@ function YellowButton({
       disabled={!!pending}
       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl
                  border-[3px] border-black font-display font-bold text-sm uppercase
-                 tracking-tight bg-primary text-black
+                 tracking-tight text-black" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
                  active:translate-x-0.5 active:translate-y-0.5 transition-all
                  disabled:opacity-50 disabled:cursor-not-allowed"
     >
@@ -143,7 +143,7 @@ export default function AccountPage() {
     <>
     <div
       className="min-h-full flex flex-col px-4 md:px-8 pb-10"
-      style={{ paddingTop: "max(2rem, env(safe-area-inset-top))", background: "#F5F0E8" }}
+      style={{ paddingTop: "max(2rem, env(safe-area-inset-top))", background: "#EBD9A8" }}
     >
       {/* Centre + cap width on iPad */}
       <div className="w-full max-w-4xl mx-auto flex flex-col flex-1">
