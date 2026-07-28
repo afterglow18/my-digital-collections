@@ -209,10 +209,10 @@ function PickerField({
 const SEASON_OPTIONS   = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
 const OCCASION_OPTIONS = ["", "Casual", "Work", "Formal", "Sport", "Special Event"];
 const CATEGORY_OPTIONS: { label: string; value: string }[] = [
-  { label: "Collection 1", value: "outfits" },
-  { label: "Collection 2", value: "beauty" },
-  { label: "Collection 3", value: "toiletries" },
-  { label: "Collection 4", value: "essentials" },
+  { label: "Row 1", value: "outfits" },
+  { label: "Row 2", value: "beauty" },
+  { label: "Row 3", value: "toiletries" },
+  { label: "Row 4", value: "essentials" },
 ];
 
 interface ItemDetailsSheetProps {

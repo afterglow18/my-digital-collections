@@ -15,10 +15,10 @@ export type RowKey = "outfits" | "beauty" | "toiletries" | "essentials";
 export const ROW_KEYS: RowKey[] = ["outfits", "beauty", "toiletries", "essentials"];
 
 const DEFAULTS: Record<RowKey, string> = {
-  outfits:    "COLLECTION 1",
-  beauty:     "COLLECTION 2",
-  toiletries: "COLLECTION 3",
-  essentials: "COLLECTION 4",
+  outfits:    "ROW 1",
+  beauty:     "ROW 2",
+  toiletries: "ROW 3",
+  essentials: "ROW 4",
 };
 
 const STORAGE_KEY = "collection-names-v1";
