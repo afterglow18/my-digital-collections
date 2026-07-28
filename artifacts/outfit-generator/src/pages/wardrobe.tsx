@@ -388,9 +388,9 @@ export default function WardrobePage() {
 
 
           {/* ── Bottom action bar: 3 transparent tap zones over baked-in buttons ── */}
-          {/* Trophy (left) → Favorites */}
+          {/* Trophy (left) → Saved looks */}
           <button
-            onClick={() => navigate("/favorites")}
+            onClick={() => navigate("/saved")}
             aria-label="View saved looks"
             style={{
               position: "absolute",

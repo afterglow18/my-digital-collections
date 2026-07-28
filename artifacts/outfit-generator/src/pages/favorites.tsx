@@ -94,7 +94,7 @@ function SortableTile({
                    shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
                    active:shadow-none active:translate-x-0.5 active:translate-y-0.5
                    transition-all touch-none"
-        style={{ background: "#EBD9A8", display: "block", padding: 0, cursor: "grab" }}
+        style={{ background: "#F5EDD8", display: "block", padding: 0, cursor: "grab" }}
       >
         {item.imageObjectPath ? (
           <img
@@ -167,7 +167,7 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col pt-8 px-4 pb-8" style={{ background: "#EBD9A8" }}>
+    <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10">
 
       <header className="mb-5">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">
