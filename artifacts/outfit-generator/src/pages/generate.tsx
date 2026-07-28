@@ -544,9 +544,9 @@ export default function GeneratePage() {
                       width: "100%", height: 52, borderRadius: 28,
                       border: "2.5px solid #B8894E",
                       background: hasItems
-                        ? "linear-gradient(to bottom, #E8D4B0, #B8894E)"
+                        ? "linear-gradient(to bottom, #EBD9A8, #C4AB72)"
                         : "rgba(30,20,10,0.50)",
-                      color: hasItems ? "#E8D4B0" : "rgba(184,137,78,0.55)",
+                      color: hasItems ? "#5C3D0A" : "rgba(184,137,78,0.55)",
                       fontWeight: 800, fontSize: 16,
                       letterSpacing: "-0.01em", textTransform: "uppercase",
                       whiteSpace: "nowrap",
