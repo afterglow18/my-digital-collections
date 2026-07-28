@@ -203,9 +203,8 @@ export default function WardrobePage() {
     ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
     : LM.rows.map(() => 0);
 
-  // Uniform photo height — sized to the bottom row, lotion row (idx 2) capped a touch shorter
-  const basePhotoH    = Math.max(0, sectionHeights[3] - 6);
-  const rowPhotoH     = (i: number) => i === 2 ? Math.max(0, basePhotoH - 14) : basePhotoH;
+  // All photos the same size as the bottom row
+  const basePhotoH = Math.max(0, sectionHeights[3] - 6);
 
   return (
     <div
@@ -357,7 +356,7 @@ export default function WardrobePage() {
                       items={items}
                       onCenteredItem={setCentredHandlers[key]}
                       onItemTap={handleItemTap}
-                      maxPhotoH={rowPhotoH(rowIdx)}
+                      maxPhotoH={basePhotoH}
                     />
                   </div>
                 )}
