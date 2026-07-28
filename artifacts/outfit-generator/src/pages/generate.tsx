@@ -235,7 +235,7 @@ export default function GeneratePage() {
   const canSave = Object.keys(centred).length > 0;
 
   // ── Section layout helpers — must stay in sync with wardrobe.tsx ─────────
-  const LABEL_OFFSETS   = [0.044, 0.068, 0.060, 0.044];
+  const LABEL_OFFSETS   = [0.044, 0.068, 0.054, 0.044];
   const LABEL_PHOTO_GAP = 0.008;
   const sectionHeights  = ready
     ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
