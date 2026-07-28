@@ -42,7 +42,7 @@ function ItemPhoto({
     <button
       onClick={onClick}
       className={`w-full ${sizeClass} border-2 border-black overflow-hidden relative`}
-      style={{ background: "#F5EDD8", padding: 0, display: "block" }}
+      style={{ background: "#EBD9A8", padding: 0, display: "block" }}
     >
       {item.imageObjectPath ? (
         <img
@@ -190,7 +190,8 @@ export default function SavedPage() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-5 border-2 border-black rounded-xl bg-primary p-4
+          className="mb-5 border-2 border-black rounded-xl p-4" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
+          // @ts-ignore
                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
         >
           <p className="font-display font-bold text-sm uppercase tracking-tight">
@@ -245,7 +246,7 @@ export default function SavedPage() {
                 data-testid={`outfit-card-${outfit.id}`}
               >
                 {/* Card header */}
-                <div className="px-4 py-3 border-b-2 border-black flex justify-between items-center bg-primary gap-2">
+                <div className="px-4 py-3 border-b-2 border-black flex justify-between items-center gap-2" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}>
                   {renamingId === outfit.id ? (
                     <form
                       className="flex-1 flex items-center gap-1"
@@ -367,7 +368,7 @@ export default function SavedPage() {
                             <button
                               onClick={() => setDetailsItem(item)}
                               className="w-full aspect-square border-2 border-black overflow-hidden rounded"
-                              style={{ background: "#F5EDD8" }}
+                              style={{ background: "#EBD9A8" }}
                             >
                               {item.imageObjectPath ? (
                                 <img src={getImageUrl(item.imageObjectPath)!} alt={item.name} className="w-full h-full object-contain" />
