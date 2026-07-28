@@ -89,9 +89,9 @@ function TierCard({
       onClick={() => onSelect(id)}
       className="flex-1 flex flex-col rounded-xl border-[3px] transition-all relative overflow-hidden text-left"
       style={{
-        borderColor: selected ? "#C4920A" : "rgba(196,146,10,0.3)",
-        background:  selected ? "rgba(196,146,10,0.18)" : "rgba(196,146,10,0.07)",
-        boxShadow:   selected ? "0 0 0 1px rgba(196,146,10,0.4)" : "none",
+        borderColor: selected ? "#000" : "#C9BAA5",
+        background:  selected ? "hsl(35 55% 82%)" : "hsl(35 30% 93%)",
+        boxShadow:   selected ? "3px 3px 0px 0px rgba(0,0,0,1)" : "none",
       }}
     >
       {best && (
@@ -103,14 +103,14 @@ function TierCard({
         </span>
       )}
       <div className="px-2.5 pt-3 pb-2.5 flex flex-col gap-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(196,146,10,0.7)" }}>{label}</p>
-        <p className="font-display font-bold text-[1.3rem] leading-none" style={{ color: "#D4A520" }}>{price}</p>
-        <p className="text-[9px] font-semibold" style={{ color: "rgba(196,146,10,0.6)" }}>{period}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-black/50">{label}</p>
+        <p className="font-display font-bold text-[1.3rem] leading-none text-black">{price}</p>
+        <p className="text-[9px] font-semibold text-black/45">{period}</p>
         <ul className="flex flex-col gap-0.5 mt-1.5">
           {notes.map((n) => (
             <li key={n} className="flex items-center gap-1">
-              <Check className="w-2.5 h-2.5 shrink-0" style={{ color: "#C4920A" }} strokeWidth={3} />
-              <span className="text-[8.5px] font-semibold leading-tight" style={{ color: "rgba(196,146,10,0.75)" }}>{n}</span>
+              <Check className="w-2.5 h-2.5 shrink-0 text-black/60" strokeWidth={3} />
+              <span className="text-[8.5px] font-semibold text-black/55 leading-tight">{n}</span>
             </li>
           ))}
         </ul>
@@ -182,20 +182,20 @@ export function UpgradeSheet({ reason, onClose }: Props) {
           <defs>
             <pattern id="plaid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
               {/* Horizontal stripes */}
-              <rect x="0" y="0"  width="40" height="3"  fill="rgba(196,146,10,0.45)" />
-              <rect x="0" y="10" width="40" height="1"  fill="rgba(196,146,10,0.22)" />
-              <rect x="0" y="18" width="40" height="3"  fill="rgba(196,146,10,0.45)" />
-              <rect x="0" y="28" width="40" height="1"  fill="rgba(196,146,10,0.22)" />
+              <rect x="0" y="0"  width="40" height="3"  fill="rgba(184,137,78,0.35)" />
+              <rect x="0" y="10" width="40" height="1"  fill="rgba(184,137,78,0.18)" />
+              <rect x="0" y="18" width="40" height="3"  fill="rgba(184,137,78,0.35)" />
+              <rect x="0" y="28" width="40" height="1"  fill="rgba(184,137,78,0.18)" />
               {/* Vertical stripes */}
-              <rect x="0"  y="0" width="3"  height="40" fill="rgba(196,146,10,0.45)" />
-              <rect x="10" y="0" width="1"  height="40" fill="rgba(196,146,10,0.22)" />
-              <rect x="18" y="0" width="3"  height="40" fill="rgba(196,146,10,0.45)" />
-              <rect x="28" y="0" width="1"  height="40" fill="rgba(196,146,10,0.22)" />
+              <rect x="0"  y="0" width="3"  height="40" fill="rgba(184,137,78,0.35)" />
+              <rect x="10" y="0" width="1"  height="40" fill="rgba(184,137,78,0.18)" />
+              <rect x="18" y="0" width="3"  height="40" fill="rgba(184,137,78,0.35)" />
+              <rect x="28" y="0" width="1"  height="40" fill="rgba(184,137,78,0.18)" />
               {/* Intersection highlights */}
-              <rect x="0"  y="0"  width="3" height="3" fill="rgba(212,165,32,0.70)" />
-              <rect x="18" y="0"  width="3" height="3" fill="rgba(212,165,32,0.70)" />
-              <rect x="0"  y="18" width="3" height="3" fill="rgba(212,165,32,0.70)" />
-              <rect x="18" y="18" width="3" height="3" fill="rgba(212,165,32,0.70)" />
+              <rect x="0"  y="0"  width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="18" y="0"  width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="0"  y="18" width="3" height="3" fill="rgba(232,212,176,0.55)" />
+              <rect x="18" y="18" width="3" height="3" fill="rgba(232,212,176,0.55)" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#plaid)" />
@@ -208,13 +208,13 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             aria-label="Close"
             style={{
               width: 36, height: 36, borderRadius: "50%",
-              border: "1.5px solid rgba(196,146,10,0.8)",
+              border: "1.5px solid rgba(184,137,78,0.6)",
               background: "rgba(14,11,7,0.7)",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer",
             }}
           >
-            <X style={{ width: 16, height: 16, color: "#D4A520" }} />
+            <X style={{ width: 16, height: 16, color: "#E8D4B0" }} />
           </button>
         </div>
 
@@ -227,12 +227,12 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             textTransform: "uppercase",
             letterSpacing: "-0.01em",
             lineHeight: 0.9,
-            color: "#D4A520",
+            color: "#E8D4B0",
             margin: 0,
           }}>
             {HEADLINES[reason]}
           </h1>
-          <p style={{ fontSize: "0.72rem", fontWeight: 600, color: "rgba(196,146,10,0.85)", marginTop: "0.5rem", whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: "0.72rem", fontWeight: 600, color: "rgba(232,212,176,0.55)", marginTop: "0.5rem", whiteSpace: "pre-line" }}>
             {SUBTITLES[reason]}
           </p>
         </div>
@@ -249,11 +249,11 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         <div className="rounded-2xl border-[3px] border-black overflow-hidden" style={{ background: "#111" }}>
           <div className="px-4 py-4 flex flex-col gap-2">
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
-               style={{ color: "#D4A520" }}>
+               style={{ color: "hsl(35 55% 82%)" }}>
               Unlimited collections
             </p>
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
-               style={{ color: "#D4A520" }}>
+               style={{ color: "hsl(35 55% 82%)" }}>
               Unlimited saved outfits
             </p>
             <p className="text-white/60 text-xs font-medium mt-1 leading-snug">
@@ -264,7 +264,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
 
         {/* Plan selector */}
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-center mb-1.5" style={{ color: "rgba(196,146,10,0.6)" }}>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-black/35 text-center mb-1.5">
             Choose Your Plan
           </p>
           <div className="flex gap-2">
@@ -298,13 +298,11 @@ export function UpgradeSheet({ reason, onClose }: Props) {
           onClick={handlePurchase}
           disabled={status === "pending"}
           className="w-full py-3.5 rounded-2xl font-display font-bold text-lg uppercase
-                     tracking-tight active:opacity-80 transition-all
-                     disabled:opacity-60 disabled:cursor-not-allowed"
+                     tracking-tight border-[3px] border-black text-black
+                     active:translate-x-0.5 active:translate-y-0.5 transition-all
+                     disabled:opacity-60 disabled:cursor-not-allowed bg-primary"
           style={{
-            background: "linear-gradient(135deg, #C4920A 0%, #A07808 100%)",
-            color: "#0e0b07",
-            border: "1px solid rgba(212,165,32,0.4)",
-            boxShadow: status === "pending" ? "none" : "0 2px 12px rgba(196,146,10,0.35)",
+            boxShadow: status === "pending" ? "none" : "4px 4px 0px 0px rgba(0,0,0,1)",
           }}
         >
           {ctaLabel}
