@@ -194,7 +194,7 @@ export default function WardrobePage() {
   const ready     = ir.width > 0;
 
   // ── Section layout helpers ────────────────────────────────────────────────
-  const CAROUSEL_OFFSET = 0.008;
+  const CAROUSEL_OFFSET = 0.032;
   const sectionHeights = ready
     ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
     : LM.rows.map(() => 0);
