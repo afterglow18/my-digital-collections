@@ -32,12 +32,12 @@ export default function WelcomePage({ onEnter }: Props) {
     setPhase("unlocking");
     setTimeout(() => setPhase("opening"),  820);   // key done
     setTimeout(() => setPhase("open"),    1720);   // doors done
-    setTimeout(() => setPhase("zooming"), 2300);   // hero pause done
+    setTimeout(() => setPhase("zooming"), 3400);   // hero pause done (~1.7 s to read)
     setTimeout(() => {
       if (calledRef.current) return;
       calledRef.current = true;
       onEnter();
-    }, 2950);                                      // zoom done
+    }, 4700);                                      // zoom done
   }, [phase, onEnter]);
 
   const isOpening = phase === "opening" || phase === "open" || phase === "zooming";
@@ -79,7 +79,7 @@ export default function WelcomePage({ onEnter }: Props) {
       <motion.div
         style={{ position: "relative", zIndex: 2, width: caseW }}
         animate={isZooming ? { scale: 3.8, opacity: 0 } : { scale: 1, opacity: 1 }}
-        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Top gold trim bar */}
         <div style={{
