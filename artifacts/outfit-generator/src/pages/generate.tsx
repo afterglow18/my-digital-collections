@@ -234,11 +234,13 @@ export default function GeneratePage() {
 
   const canSave = Object.keys(centred).length > 0;
 
-  // ── Section layout helpers — per-row, same as wardrobe.tsx ──────────────
-  const CAROUSEL_OFFSET = 0.042;
-  const sectionHeights = ready
-    ? LM.rows.map(lm => pH(ir, lm.shelfY - (lm.sectionTop + CAROUSEL_OFFSET)))
+  // ── Section layout helpers — must stay in sync with wardrobe.tsx ─────────
+  const LABEL_OFFSETS   = [0.044, 0.068, 0.060, 0.044];
+  const LABEL_PHOTO_GAP = 0.008;
+  const sectionHeights  = ready
+    ? LM.rows.map((lm, i) => pH(ir, lm.shelfY - (lm.sectionTop + LABEL_OFFSETS[i] + LABEL_PHOTO_GAP)))
     : LM.rows.map(() => 0);
+  const basePhotoH = Math.max(0, Math.round(sectionHeights[3] * 0.72));
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -316,14 +318,15 @@ export default function GeneratePage() {
             {ROWS.map(({ key }, rowIdx) => {
               const lm    = LM.rows[rowIdx];
               const items = { outfits, beauty, toiletries, essentials }[key];
-              const carouselTopFrac = lm.sectionTop + 0.042;
+              const carouselTopFrac = lm.sectionTop + LABEL_OFFSETS[rowIdx] + LABEL_PHOTO_GAP;
               const secTop = pY(ir, carouselTopFrac);
               const secH   = pH(ir, lm.shelfY - carouselTopFrac);
               const btnCY  = pY(ir, lm.btnCY);
               const btnH   = Math.max(32, pH(ir, 0.045));
 
               const label = collectionNames[key];
-              const labelY = pY(ir, lm.sectionTop + 0.018);
+              const fontSize = Math.max(9, pH(ir, 0.013));
+              const labelY = pY(ir, lm.sectionTop + LABEL_OFFSETS[rowIdx]);
 
               return (
                 <React.Fragment key={key}>
@@ -334,11 +337,13 @@ export default function GeneratePage() {
                     top: labelY,
                     left: carLeft,
                     width: carW,
+                    height: Math.ceil(fontSize * 2.2),
                     transform: "translateY(-50%)",
-                    zIndex: 12,
+                    zIndex: 23,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    overflow: "hidden",
                     gap: 5,
                   }}>
                     <span style={{
@@ -381,14 +386,14 @@ export default function GeneratePage() {
                       style={{
                         position: "absolute",
                         top: secTop, left: carLeft, width: carW, height: secH,
-                        zIndex: 10, overflow: "hidden",
+                        zIndex: 10, overflow: "visible",
                       }}
                     >
                       <ClosetRow
                         ref={rowRefs[key]}
                         items={items}
                         onCenteredItem={setCentredHandlers[key]}
-                        maxPhotoH={Math.max(0, sectionHeights[rowIdx] - 4)}
+                        maxPhotoH={basePhotoH}
                         disableSwipe
                       />
                     </div>
