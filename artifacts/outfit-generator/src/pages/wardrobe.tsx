@@ -280,7 +280,7 @@ export default function WardrobePage() {
             const lm      = LM.rows[rowIdx];
             const items   = rowData[key];
 
-            const carouselTopFrac = lm.sectionTop + 0.042;
+            const carouselTopFrac = lm.sectionTop + CAROUSEL_OFFSET;
             const secTop  = pY(ir, carouselTopFrac);
             const secH    = pH(ir, lm.shelfY - carouselTopFrac);
             const carLeft = pX(ir, LM.doorL);
@@ -290,8 +290,8 @@ export default function WardrobePage() {
             const btnCY   = pY(ir, lm.btnCY);
             const btnH    = Math.max(32, pH(ir, 0.045));
 
-            const labelOffset = rowIdx === 3 ? 0.190 : rowIdx === 2 ? 0.140 : 0.125;
-            const labelY    = pY(ir, lm.shelfY - labelOffset);
+            // Label sits ON the shelf bar — below the photo area, never overlapping
+            const labelY    = pY(ir, lm.shelfY);
             const labelText = collectionNames[key];
             const fontSize  = Math.max(9, pH(ir, 0.013));
 
@@ -345,7 +345,7 @@ export default function WardrobePage() {
                       items={items}
                       onCenteredItem={setCentredHandlers[key]}
                       onItemTap={handleItemTap}
-                      maxPhotoH={sectionHeights[rowIdx]}
+                      maxPhotoH={Math.max(0, sectionHeights[rowIdx] - 8)}
                     />
                   </div>
                 )}
