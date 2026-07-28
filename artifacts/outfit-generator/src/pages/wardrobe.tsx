@@ -420,9 +420,9 @@ export default function WardrobePage() {
               cursor: "pointer",
             }}
           />
-          {/* Heart (right) → Favorites */}
+          {/* Heart (right) → Upgrade/purchase */}
           <button
-            onClick={() => navigate("/favorites")}
+            onClick={() => setUpgradeReason("items")}
             aria-label="View favourites"
             style={{
               position: "absolute",
