@@ -413,7 +413,7 @@ export default function SavedPage() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl mt-8">
-          <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center border-2 border-black mb-4">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center border-2 border-black mb-4" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}>
             <Bookmark className="w-7 h-7" />
           </div>
           <h3 className="font-display font-bold text-xl mb-2">No looks saved yet.</h3>
