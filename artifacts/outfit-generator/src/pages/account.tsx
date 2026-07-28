@@ -61,9 +61,10 @@ function YellowButton({
       disabled={!!pending}
       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl
                  border-[3px] border-black font-display font-bold text-sm uppercase
-                 tracking-tight text-black" style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
+                 tracking-tight text-black
                  active:translate-x-0.5 active:translate-y-0.5 transition-all
                  disabled:opacity-50 disabled:cursor-not-allowed"
+      style={{ background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)" }}
     >
       {pending ? (
         <Loader2 className="w-4 h-4 animate-spin" />
