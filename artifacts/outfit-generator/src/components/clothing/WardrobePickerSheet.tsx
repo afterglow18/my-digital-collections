@@ -17,15 +17,9 @@ import {
 import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { useCollectionNames } from "@/hooks/useCollectionNames";
 
 type Category = "outfits" | "beauty" | "toiletries" | "essentials";
-
-const CATEGORY_LABELS: Record<Category, string> = {
-  outfits:    "Row 1",
-  beauty:     "Row 2",
-  toiletries: "Row 3",
-  essentials: "Row 4",
-};
 
 interface Props {
   open:         boolean;
@@ -43,6 +37,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [quickAddCategory, setQuickAddCategory] = useState<Category>("outfits");
   const queryClient = useQueryClient();
+  const { names: rowNames } = useCollectionNames();
 
   // When category is provided fetch that category; otherwise fetch all
   const params = category ? { category: category as ListClothingCategory } : {};
@@ -51,7 +46,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
     { query: { queryKey: getListClothingQueryKey(params), enabled: open } }
   );
 
-  const label = category ? CATEGORY_LABELS[category] : "Extra";
+  const label = category ? rowNames[category] : "Extra";
 
   const handleClose = () => onOpenChange(false);
 
@@ -184,7 +179,7 @@ export function WardrobePickerSheet({ open, onOpenChange, category, onPick, exis
                                shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
                                active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                   >
-                    {CATEGORY_LABELS[cat]}
+                    {rowNames[cat]}
                   </button>
                 ))}
               </div>
