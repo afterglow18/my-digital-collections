@@ -165,7 +165,6 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
   const cameraInputRef  = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const batchInputRef   = useRef<HTMLInputElement>(null);
 
   const createItem  = useCreateClothingItem();
   const queryClient = useQueryClient();
@@ -221,49 +220,6 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
       return false;
     }
   }, [category, createItem, queryClient, onCreated]);
-
-  // ── handleBatchUpload — multi-photo, no preview, always direct upload ────
-  const handleBatchUpload = useCallback(async (blobs: (File | Blob)[]) => {
-    if (!blobs.length) return;
-    setErrorMsg(null);
-    setPhase("uploading");
-    setProgress({ current: 0, total: blobs.length });
-    let failed = 0;
-    for (let i = 0; i < blobs.length; i++) {
-      setProgress({ current: i + 1, total: blobs.length });
-      const ok = await saveOneFile(blobs[i], existingCount + i);
-      if (!ok) failed++;
-    }
-    setProgress(null);
-    if (failed > 0) {
-      setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved. Please try again.`);
-      setPhase("pick");
-    } else {
-      handleClose();
-    }
-  }, [saveOneFile, existingCount, handleClose]);
-
-  const handleAddMultiple = useCallback(async () => {
-    if (!Capacitor.isNativePlatform()) {
-      batchInputRef.current?.click();
-      return;
-    }
-    try {
-      const { Camera } = await import("@capacitor/camera");
-      const result = await Camera.pickImages({ quality: 85, width: 2048, presentationStyle: "popover" });
-      const photos = result.photos ?? [];
-      if (!photos.length) return;
-      const blobs = await Promise.all(
-        photos.map(async (p) => { const r = await fetch(p.webPath); return r.blob(); })
-      );
-      await handleBatchUpload(blobs);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
-      if (msg.includes("cancel") || msg.includes("denied") || msg.includes("user denied")) return;
-      console.error("Batch gallery error:", err);
-      setErrorMsg("Could not open photo library. Please try again.");
-    }
-  }, [handleBatchUpload]);
 
   // ── handleFile — single-photo bg-removal pipeline ────────────────────────
   const handleFile = useCallback(async (file: File | Blob) => {
@@ -517,21 +473,6 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               </button>
             </div>
 
-            {/* Add Multiple — full-width, bypasses bg-removal preview */}
-            <button
-              onClick={handleAddMultiple}
-              className="w-full flex items-center justify-center gap-3 py-4
-                         border-4 border-black rounded-2xl bg-white
-                         shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]
-                         active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-            >
-              <span className="text-2xl leading-none">📦</span>
-              <span className="font-display font-bold text-base uppercase tracking-tight">
-                Add Multiple Photos
-              </span>
-            </button>
-
-
             <div className="border-2 border-black rounded-2xl bg-white p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               <p className="font-display font-bold text-sm uppercase tracking-tight mb-3 flex items-center gap-2">
                 <span>📸</span> PHOTO TIPS
@@ -711,26 +652,14 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         className="hidden"
         onChange={handleInputChange}
       />
-      {/* Gallery — single pick, goes through bg-removal preview */}
+      {/* Gallery — single or multi pick; single goes through bg-removal preview, multi uploads directly */}
       <input
         ref={galleryInputRef}
         type="file"
         accept="image/*"
-        className="hidden"
-        onChange={handleInputChange}
-      />
-      {/* Batch — multi-select, skips preview, direct upload */}
-      <input
-        ref={batchInputRef}
-        type="file"
-        accept="image/*"
         multiple
         className="hidden"
-        onChange={(e) => {
-          const files = Array.from(e.target.files ?? []);
-          e.target.value = "";
-          if (files.length) handleBatchUpload(files);
-        }}
+        onChange={handleInputChange}
       />
     </motion.div>
   );
