@@ -123,10 +123,10 @@ async function blobToJpegDataUrl(blob: Blob): Promise<string> {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PHOTO_TIPS = [
-  "Photograph individual products or bundle multiple items together.",
-  "Lay everything flat on a plain background.",
-  "Take the photo from directly above.",
-  "Keep all items fully in frame.",
+  "Take close-up photos to show details.",
+  "Avoid glare from glass or bright lighting.",
+  "Keep the entire item in frame.",
+  "Use a clean background when possible.",
 ] as const;
 
 const CATEGORY_EXAMPLES: Record<string, { emoji: string; items: string[] }> = {
