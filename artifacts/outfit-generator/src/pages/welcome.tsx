@@ -92,10 +92,10 @@ export default function WelcomePage({ onEnter }: Props) {
           }}
         />
 
-        {/* Dark gradient over lower portion for text readability */}
+        {/* Dark gradient — top and bottom — so image feels cinematic, not accidental */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.50) 35%, transparent 62%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 30%, transparent 45%, rgba(0,0,0,0.92) 100%)",
           pointerEvents: "none",
         }} />
 
