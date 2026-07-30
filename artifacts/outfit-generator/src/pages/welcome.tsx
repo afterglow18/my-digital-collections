@@ -173,9 +173,9 @@ export default function WelcomePage({ onEnter }: Props) {
             "0 0 0 1px rgba(184,137,78,0.12), " +
             "inset 0 1px 0 rgba(184,137,78,0.18)",
         }}>
-          {/* App preview — revealed when doors open */}
+          {/* Hero image — revealed when doors open */}
           <motion.img
-            src="/app-preview.jpg"
+            src="/welcome-hero.png"
             alt=""
             draggable={false}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
