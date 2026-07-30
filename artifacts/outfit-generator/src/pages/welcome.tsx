@@ -1,22 +1,23 @@
 /**
- * WelcomePage — Glass display-case unlock sequence.
+ * WelcomePage — Three-phase splash sequence.
  *
  * PHASES
- *   locked     Initial: closed glass case, gold keyhole visible.
- *   unlocking  Key appears and rotates in the lock (0.8 s).
- *   opening    Two glass doors swing open via rotateY (0.9 s).
- *   open       Hero image revealed inside — brief pause (0.5 s).
+ *   hero       Full-screen hero image, auto-advances after 2.5 s.
+ *   locked     Glass display case shown; user taps button to begin.
+ *   unlocking  Key rotates in lock (0.8 s).
+ *   opening    Two glass doors swing open (0.9 s).
+ *   open       Hero image revealed inside — brief pause (1.7 s).
  *   zooming    Case scales up to fill screen → fades out → onEnter().
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
-type Phase = "locked" | "unlocking" | "opening" | "open" | "zooming";
+type Phase = "hero" | "locked" | "unlocking" | "opening" | "open" | "zooming";
 interface Props { onEnter: () => void; }
 
 export default function WelcomePage({ onEnter }: Props) {
-  const [phase, setPhase] = useState<Phase>("locked");
+  const [phase, setPhase] = useState<Phase>("hero");
   const [vh, setVh]       = useState(700);
   const calledRef         = useRef(false);
 
@@ -27,24 +28,31 @@ export default function WelcomePage({ onEnter }: Props) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
+  // Phase 1 → Phase 2: auto-advance after 2.5 s
+  useEffect(() => {
+    if (phase !== "hero") return;
+    const t = setTimeout(() => setPhase("locked"), 2500);
+    return () => clearTimeout(t);
+  }, [phase]);
+
   const handleOpen = useCallback(() => {
     if (phase !== "locked") return;
     setPhase("unlocking");
-    setTimeout(() => setPhase("opening"),  820);   // key done
-    setTimeout(() => setPhase("open"),    1720);   // doors done
-    setTimeout(() => setPhase("zooming"), 3400);   // hero pause done (~1.7 s to read)
+    setTimeout(() => setPhase("opening"),  820);
+    setTimeout(() => setPhase("open"),    1720);
+    setTimeout(() => setPhase("zooming"), 3400);
     setTimeout(() => {
       if (calledRef.current) return;
       calledRef.current = true;
       onEnter();
-    }, 4700);                                      // zoom done
+    }, 4700);
   }, [phase, onEnter]);
 
+  const isHero    = phase === "hero";
   const isOpening = phase === "opening" || phase === "open" || phase === "zooming";
   const isOpen    = phase === "open" || phase === "zooming";
   const isZooming = phase === "zooming";
 
-  // Case size: portrait, max ~45 vh tall
   const caseW = Math.min(Math.round(vh * 0.32), 240);
   const caseH = Math.round(caseW * (4 / 3));
 
@@ -60,7 +68,69 @@ export default function WelcomePage({ onEnter }: Props) {
         overflowY: "auto",
       }}
     >
-      {/* ── Ambient gold glow ── */}
+
+      {/* ── Phase 1: Full-screen hero overlay ────────────────────────────────── */}
+      <motion.div
+        animate={{ opacity: isHero ? 1 : 0 }}
+        transition={{ duration: 0.65, ease: "easeIn" }}
+        style={{
+          position: "absolute", inset: 0,
+          zIndex: 10,
+          pointerEvents: isHero ? "auto" : "none",
+        }}
+      >
+        {/* Hero image fills screen */}
+        <img
+          src="/welcome-hero.png"
+          alt=""
+          draggable={false}
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+
+        {/* Dark gradient over lower portion for text readability */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.50) 35%, transparent 62%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Branding near the bottom */}
+        <div style={{
+          position: "absolute",
+          bottom: `calc(env(safe-area-inset-bottom) + 72px)`,
+          left: 0, right: 0,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", gap: 6,
+        }}>
+          <div style={{
+            fontSize: 11, fontWeight: 600,
+            letterSpacing: "0.26em",
+            textTransform: "uppercase" as const,
+            color: "rgba(232,212,176,0.65)",
+          }}>
+            Welcome to
+          </div>
+          <div style={{
+            fontFamily: "var(--font-display, serif)",
+            fontWeight: 900,
+            fontSize: "clamp(22px, 7vw, 36px)",
+            letterSpacing: "0.08em",
+            lineHeight: 1.1,
+            color: "#E8D4B0",
+            textAlign: "center",
+            textTransform: "uppercase" as const,
+          }}>
+            MY DIGITAL<br />COLLECTIONS
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── Ambient gold glow (Phase 2+) ─────────────────────────────────────── */}
       <motion.div
         style={{
           position: "absolute",
@@ -75,7 +145,7 @@ export default function WelcomePage({ onEnter }: Props) {
         transition={{ duration: 0.5 }}
       />
 
-      {/* ── Glass display case ── */}
+      {/* ── Glass display case ───────────────────────────────────────────────── */}
       <motion.div
         style={{ position: "relative", zIndex: 2, width: caseW }}
         animate={isZooming ? { scale: 3.8, opacity: 0 } : { scale: 1, opacity: 1 }}
@@ -160,7 +230,6 @@ export default function WelcomePage({ onEnter }: Props) {
             animate={{ rotateY: isOpening ? -125 : 0 }}
             transition={{ duration: 0.88, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Reflection strip */}
             <div style={{
               position: "absolute", top: "8%", left: "14%",
               width: "16%", height: "58%",
@@ -187,7 +256,6 @@ export default function WelcomePage({ onEnter }: Props) {
             animate={{ rotateY: isOpening ? 125 : 0 }}
             transition={{ duration: 0.88, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Reflection strip */}
             <div style={{
               position: "absolute", top: "8%", right: "14%",
               width: "16%", height: "58%",
@@ -195,10 +263,9 @@ export default function WelcomePage({ onEnter }: Props) {
               borderRadius: 3,
             }} />
           </motion.div>
-
         </div>
 
-        {/* ── Keyhole — outside the 3D container so z-index works ── */}
+        {/* ── Keyhole ── */}
         <motion.div
           style={{
             position: "absolute",
@@ -215,7 +282,7 @@ export default function WelcomePage({ onEnter }: Props) {
           </svg>
         </motion.div>
 
-        {/* ── Key — outside 3D container, always visible when locked ── */}
+        {/* ── Key ── */}
         <motion.div
           style={{
             position: "absolute",
@@ -232,7 +299,6 @@ export default function WelcomePage({ onEnter }: Props) {
               : { opacity: 0, rotate: 360 }
           }
         >
-          {/* Outer glow */}
           <div style={{
             position: "absolute", inset: -8,
             borderRadius: "50%",
@@ -240,19 +306,12 @@ export default function WelcomePage({ onEnter }: Props) {
             filter: "blur(6px)",
           }} />
           <svg width="52" height="78" viewBox="0 0 52 78" fill="none">
-            {/* Glow halo on bow */}
             <circle cx="26" cy="17" r="18" fill="rgba(184,137,78,0.15)" />
-            {/* Bow outer ring */}
             <circle cx="26" cy="17" r="15" fill="#8B6535" stroke="#E8D4B0" strokeWidth="2.5" />
-            {/* Bow face */}
             <circle cx="26" cy="17" r="11" fill="#B8894E" />
-            {/* Bow hole */}
             <circle cx="26" cy="17" r="5.5" fill="#0a0806" />
-            {/* Highlight */}
             <circle cx="21" cy="12" r="3" fill="rgba(232,212,176,0.4)" />
-            {/* Shaft */}
             <rect x="23" y="32" width="6" height="30" rx="3" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
-            {/* Teeth */}
             <rect x="29" y="42" width="10" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
             <rect x="29" y="51" width="7.5" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
             <rect x="29" y="60" width="5" height="5" rx="2.5" fill="#B8894E" stroke="#8B6535" strokeWidth="1" />
@@ -269,7 +328,7 @@ export default function WelcomePage({ onEnter }: Props) {
         }} />
       </motion.div>
 
-      {/* ── Title + button ── */}
+      {/* ── Title + button (Phase 2+) ─────────────────────────────────────────── */}
       <motion.div
         style={{
           position: "relative", zIndex: 3,
@@ -279,6 +338,16 @@ export default function WelcomePage({ onEnter }: Props) {
         animate={{ opacity: isZooming ? 0 : 1, y: isZooming ? 10 : 0 }}
         transition={{ duration: 0.25 }}
       >
+        <div style={{
+          fontSize: 11, fontWeight: 600,
+          letterSpacing: "0.26em",
+          textTransform: "uppercase" as const,
+          color: "rgba(232,212,176,0.55)",
+          marginBottom: 6,
+        }}>
+          Welcome to
+        </div>
+
         <div style={{
           fontFamily: "var(--font-display, serif)",
           fontWeight: 900,
@@ -292,18 +361,7 @@ export default function WelcomePage({ onEnter }: Props) {
           MY DIGITAL<br />COLLECTIONS
         </div>
 
-        <div style={{
-          marginTop: 8,
-          fontSize: 11,
-          fontWeight: 500,
-          letterSpacing: "0.24em",
-          textTransform: "uppercase" as const,
-          color: "rgba(232,212,176,0.38)",
-        }}>
-          your personal collections
-        </div>
-
-        {/* CTA — hidden once sequence starts */}
+        {/* CTA — only clickable in locked phase */}
         <motion.button
           onClick={handleOpen}
           animate={{ opacity: phase === "locked" ? 1 : 0 }}
@@ -328,14 +386,19 @@ export default function WelcomePage({ onEnter }: Props) {
         </motion.button>
       </motion.div>
 
-      {/* ── Footer links ── */}
-      <div style={{
-        position: "fixed",
-        bottom: "calc(env(safe-area-inset-bottom) + 10px)",
-        left: 0, right: 0,
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-        zIndex: 210,
-      }}>
+      {/* ── Footer links (hidden during hero phase) ──────────────────────────── */}
+      <motion.div
+        animate={{ opacity: isHero ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          position: "fixed",
+          bottom: "calc(env(safe-area-inset-bottom) + 10px)",
+          left: 0, right: 0,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+          zIndex: 210,
+          pointerEvents: isHero ? "none" : "auto",
+        }}
+      >
         <a
           href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
           target="_blank" rel="noopener noreferrer"
@@ -346,7 +409,7 @@ export default function WelcomePage({ onEnter }: Props) {
           target="_blank" rel="noopener noreferrer"
           style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.25)", textDecoration: "none", letterSpacing: "0.02em" }}
         >Support</a>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
