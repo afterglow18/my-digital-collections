@@ -197,21 +197,12 @@ export default function WelcomePage({ onEnter }: Props) {
             "0 0 0 1px rgba(184,137,78,0.12), " +
             "inset 0 1px 0 rgba(184,137,78,0.18)",
         }}>
-          {/* Hero image — revealed when doors open */}
-          <motion.img
+          {/* Hero image — always present inside the case */}
+          <img
             src="/welcome-hero.png"
             alt=""
             draggable={false}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            animate={{ opacity: isOpen ? 1 : 0 }}
-            transition={{ duration: 0.5, delay: isOpen ? 0.2 : 0 }}
-          />
-
-          {/* Dark interior overlay (hides preview when closed) */}
-          <motion.div
-            style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #0e0b07 0%, #1a1008 100%)", zIndex: 1 }}
-            animate={{ opacity: isOpen ? 0 : 1 }}
-            transition={{ duration: 0.35 }}
           />
 
           {/* Shelf lines (visible when locked) */}
