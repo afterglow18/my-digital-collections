@@ -458,9 +458,9 @@ export default function WardrobePage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.92, y: 12 }}
               style={{
-                background: "#fff", borderRadius: 20,
-                border: "2.5px solid #000",
-                boxShadow: "4px 4px 0 #000",
+                background: "#1C1208", borderRadius: 20,
+                border: "2.5px solid #C4AB72",
+                boxShadow: "4px 4px 0 #C4AB72",
                 padding: "24px 20px 20px",
                 width: "100%", maxWidth: 340,
               }}
@@ -468,11 +468,11 @@ export default function WardrobePage() {
               {saveSuccess ? (
                 <div style={{ textAlign: "center", padding: "12px 0" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>💕</div>
-                  <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Group saved!</p>
+                  <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)", color: "#EBD9A8" }}>Group saved!</p>
                 </div>
               ) : (
                 <>
-                  <p style={{ fontWeight: 800, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 12 }}>
+                  <p style={{ fontWeight: 800, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 12, color: "#EBD9A8" }}>
                     Name this collection
                   </p>
                   <input
@@ -483,9 +483,10 @@ export default function WardrobePage() {
                     placeholder="e.g. Sunday Glow ✨"
                     style={{
                       width: "100%", height: 42, borderRadius: 10,
-                      border: "2px solid #000", padding: "0 12px",
+                      border: "2px solid #C4AB72", padding: "0 12px",
                       fontSize: 14, fontFamily: "var(--font-display)",
                       boxSizing: "border-box", marginBottom: 12, outline: "none",
+                      background: "#0E0A04", color: "#EBD9A8",
                     }}
                   />
                   <div style={{ display: "flex", gap: 8 }}>
@@ -493,9 +494,9 @@ export default function WardrobePage() {
                       onClick={() => setIsSaveOpen(false)}
                       style={{
                         flex: 1, height: 40, borderRadius: 20,
-                        border: "2px solid #000", background: "#fff",
-                        fontWeight: 700, fontSize: 13, cursor: "pointer",
-                        fontFamily: "var(--font-display)",
+                        border: "2px solid #C4AB72", background: "#1C1208",
+                        color: "#C4AB72", fontWeight: 700, fontSize: 13,
+                        cursor: "pointer", fontFamily: "var(--font-display)",
                       }}
                     >Cancel</button>
                     <button
@@ -503,8 +504,8 @@ export default function WardrobePage() {
                       disabled={!saveName.trim() || saveOutfit.isPending}
                       style={{
                         flex: 1, height: 40, borderRadius: 20,
-                        border: "2px solid #B8894E",
-                        background: "linear-gradient(to bottom, #E8D4B0, #B8894E)",
+                        border: "2px solid #C4AB72",
+                        background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)",
                         color: "#3A2210", fontWeight: 800, fontSize: 13,
                         cursor: saveName.trim() ? "pointer" : "default",
                         opacity: saveName.trim() ? 1 : 0.45,

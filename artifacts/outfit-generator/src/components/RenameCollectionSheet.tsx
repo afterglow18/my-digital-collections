@@ -61,21 +61,28 @@ export function RenameCollectionSheet({ open, currentName, onSave, onClose }: Pr
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 280 }}
             className="fixed bottom-0 left-0 right-0 z-[91] max-w-md mx-auto
-                       bg-[#F9F4EE] border-t-4 border-x-4 border-black rounded-t-3xl
+                       border-t-4 border-x-4 border-[#C4AB72] rounded-t-3xl
                        px-5 pt-5"
-            style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            style={{
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              background: "#1C1208",
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display font-black text-lg uppercase tracking-tight">
+              <h2 className="font-display font-black text-lg uppercase tracking-tight text-[#EBD9A8]">
                 Rename Collection
               </h2>
               <button
                 onClick={onClose}
-                className="w-9 h-9 border-2 border-black rounded-full flex items-center
-                           justify-center bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
-                           transition-all"
+                className="w-9 h-9 rounded-full flex items-center justify-center
+                           active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                style={{
+                  border: "2px solid #C4AB72",
+                  background: "#0E0A04",
+                  color: "#C4AB72",
+                  boxShadow: "2px 2px 0 #C4AB72",
+                }}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -90,10 +97,14 @@ export function RenameCollectionSheet({ open, currentName, onSave, onClose }: Pr
               onKeyDown={handleKeyDown}
               maxLength={24}
               placeholder="COLLECTION NAME"
-              className="w-full border-[3px] border-black rounded-xl px-4 py-3
+              className="w-full rounded-xl px-4 py-3
                          font-display font-bold text-base uppercase tracking-wide
-                         bg-white outline-none focus:ring-2 focus:ring-black/20
-                         placeholder:text-black/30"
+                         outline-none placeholder:text-[#C4AB72]/40"
+              style={{
+                border: "2.5px solid #C4AB72",
+                background: "#0E0A04",
+                color: "#EBD9A8",
+              }}
             />
 
             {/* Save button */}
@@ -101,11 +112,15 @@ export function RenameCollectionSheet({ open, currentName, onSave, onClose }: Pr
               onClick={handleSave}
               disabled={!value.trim()}
               className="mt-4 w-full flex items-center justify-center gap-2 py-4
-                         border-[3px] border-black rounded-2xl font-display font-bold
-                         text-sm uppercase tracking-tight bg-[#E8D4B0]
-                         shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-                         active:translate-x-1 active:translate-y-1 active:shadow-none
-                         transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                         rounded-2xl font-display font-bold text-sm uppercase tracking-tight
+                         active:translate-x-1 active:translate-y-1 transition-all
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                border: "2.5px solid #C4AB72",
+                background: "linear-gradient(to bottom, #EBD9A8, #C4AB72)",
+                color: "#3A2210",
+                boxShadow: "4px 4px 0 #C4AB72",
+              }}
             >
               <Check className="w-4 h-4" strokeWidth={3} />
               Save Name
