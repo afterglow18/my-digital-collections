@@ -65,11 +65,10 @@ function AppShell() {
 
   return (
     <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-      {entered ? (
-        <Router />
-      ) : (
-        <WelcomePage onEnter={handleEnter} />
-      )}
+      {/* App always rendered so the zoom transition reveals it */}
+      <Router />
+      {/* Welcome overlay sits on top until the zoom completes */}
+      {!entered && <WelcomePage onEnter={handleEnter} />}
     </WouterRouter>
   );
 }
