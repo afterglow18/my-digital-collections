@@ -130,6 +130,30 @@ export default function WelcomePage({ onEnter }: Props) {
         </div>
       </motion.div>
 
+      {/* ── Background scene (Phase 2+) — hero image blurred behind the case ── */}
+      <motion.div
+        animate={{ opacity: isHero ? 0 : isZooming ? 0 : 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        style={{
+          position: "absolute", inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src="/welcome-hero.png"
+          alt=""
+          draggable={false}
+          style={{
+            position: "absolute", inset: "-20px",
+            width: "calc(100% + 40px)", height: "calc(100% + 40px)",
+            objectFit: "cover",
+            filter: "blur(18px) brightness(0.35) saturate(0.8)",
+          }}
+        />
+      </motion.div>
+
       {/* ── Ambient gold glow (Phase 2+) ─────────────────────────────────────── */}
       <motion.div
         style={{
