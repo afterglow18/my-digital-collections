@@ -164,9 +164,9 @@ export default function SavedPage() {
       {/* Centre content on iPad so it doesn't stretch edge-to-edge */}
       <div className="w-full max-w-4xl mx-auto flex flex-col flex-1">
       <header className="mb-6">
-        <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
+        <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1 text-[#EBD9A8]">Lookbook</h1>
         <div className="flex items-center justify-between">
-          <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
+          <p className="font-medium text-sm text-[#C4AB72]/80">Hall of fame.</p>
 
           {isFree && outfitCount > 0 && (
             <button
