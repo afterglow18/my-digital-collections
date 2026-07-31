@@ -25,9 +25,9 @@ interface Props {
 // ── Copy ──────────────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  "Unlimited clothing items",
-  "Unlimited saved outfits",
-  "Save your entire wardrobe",
+  "Unlimited collection items",
+  "Unlimited lookbook saves",
+  "Catalogue your entire collection",
   "One-time payment options",
   "Choose monthly, yearly or lifetime!",
 ] as const;
@@ -40,7 +40,7 @@ const HEADLINES: Record<UpgradeReason, string> = {
 
 const SUBTITLES: Record<UpgradeReason, string> = {
   items:     "You've reached the free 20 item limit.\nUpgrade once, collect everything.",
-  outfits:   "You've hit the free outfit limit. Upgrade to save every look.",
+  outfits:   "You've hit the free lookbook limit. Upgrade to save every look.",
   mannequin: "A premium feature — unlock it once.",
 };
 
@@ -254,10 +254,10 @@ export function UpgradeSheet({ reason, onClose }: Props) {
             </p>
             <p className="font-display font-bold uppercase text-[1.45rem] leading-[0.92] tracking-tight"
                style={{ color: "hsl(35 55% 82%)" }}>
-              Unlimited saved outfits
+              Unlimited lookbook saves
             </p>
             <p className="text-white/60 text-xs font-medium mt-1 leading-snug">
-              Your entire wardrobe, beautifully packed — forever.
+              Every item, every row — catalogued forever.
             </p>
           </div>
         </div>
