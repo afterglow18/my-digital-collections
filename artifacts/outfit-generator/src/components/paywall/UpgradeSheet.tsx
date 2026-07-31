@@ -9,7 +9,7 @@
  *   $rc_annual    → Yearly   $19.99
  *   $rc_lifetime  → Lifetime $9.99 (one-time)
  */
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { useSubscription } from "@/lib/revenuecat";
