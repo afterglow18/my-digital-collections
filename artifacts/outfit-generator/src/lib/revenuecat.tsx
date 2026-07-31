@@ -96,9 +96,12 @@ function useSubscriptionContext() {
     queryFn: async () => {
       const Purchases = await getPurchases();
       if (!Purchases) return null;
-      // getOfferings() returns { offerings: Offering[], current: Offering | null }.
-      // Return the full object so callers can reach .current.availablePackages.
-      const result = await Purchases.getOfferings();
+      // Race against an 8-second timeout so the button never stays stuck.
+      const result = await Promise.race([
+        Purchases.getOfferings(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+      ]);
+      if (!result) console.warn("[RevenueCat] getOfferings timed out");
       return result ?? null;
     },
     staleTime: 300 * 1000,

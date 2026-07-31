@@ -126,6 +126,14 @@ export function UpgradeSheet({ reason, onClose }: Props) {
   const [selected,  setSelected]  = useState<TierId>("lifetime");
   const [status,    setStatus]    = useState<"idle" | "pending">("idle");
   const [purchaseErr, setPurchaseErr] = useState<string | null>(null);
+  // After 5 s, stop blocking the button — offerings may simply be unavailable.
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isLoading) { setLoadingTimedOut(false); return; }
+    const t = setTimeout(() => setLoadingTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, [isLoading]);
+  const effectivelyLoading = isLoading && !loadingTimedOut;
 
   const prices: Record<TierId, string> = {
     monthly:  getLivePrice(offerings, "$rc_monthly",  "$1.99"),
@@ -134,14 +142,14 @@ export function UpgradeSheet({ reason, onClose }: Props) {
   };
 
   const ctaLabel =
-    isLoading            ? "Loading…"
+    effectivelyLoading   ? "Loading…"
     : status === "pending" ? "Opening…"
     : selected === "lifetime"   ? `UNLOCK FOREVER – ${prices.lifetime} ›`
     : selected === "yearly"     ? `SUBSCRIBE – ${prices.yearly}/YR ›`
     :                             `SUBSCRIBE – ${prices.monthly}/MO ›`;
 
   const handlePurchase = useCallback(async () => {
-    if (status === "pending" || isLoading) return;
+    if (status === "pending" || effectivelyLoading) return;
     setPurchaseErr(null);
     setStatus("pending");
     const pkg = getRcPackage(offerings, TIER_DEFAULTS[selected].pkgId);
@@ -163,7 +171,7 @@ export function UpgradeSheet({ reason, onClose }: Props) {
       console.error("Purchase error:", err);
       setPurchaseErr("Something went wrong. Please try again.");
     }
-  }, [status, isLoading, offerings, selected, purchase, onClose]);
+  }, [status, effectivelyLoading, offerings, selected, purchase, onClose]);
 
   return (
     <motion.div
@@ -313,13 +321,13 @@ export function UpgradeSheet({ reason, onClose }: Props) {
         )}
         <button
           onClick={handlePurchase}
-          disabled={status === "pending" || isLoading}
+          disabled={status === "pending" || effectivelyLoading}
           className="w-full py-3.5 rounded-2xl font-display font-bold text-lg uppercase
                      tracking-tight border-[3px] border-black text-black
                      active:translate-x-0.5 active:translate-y-0.5 transition-all
                      disabled:opacity-60 disabled:cursor-not-allowed bg-primary"
           style={{
-            boxShadow: (status === "pending" || isLoading) ? "none" : "4px 4px 0px 0px rgba(0,0,0,1)",
+            boxShadow: (status === "pending" || effectivelyLoading) ? "none" : "4px 4px 0px 0px rgba(0,0,0,1)",
           }}
         >
           {ctaLabel}
