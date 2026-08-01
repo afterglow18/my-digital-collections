@@ -1,13 +1,11 @@
 /**
  * useEntitlements — maps RevenueCat subscription state to the app's tier/caps model.
  *
- * Keeps the same public API as the old Stripe-backed version so pages need no
- * changes.  Under the hood it reads from useSubscription() (RevenueCat) instead
- * of localStorage + Stripe Checkout.
+ * Reads from useSubscription() (RevenueCat) and maps to the app's tier/caps model.
  *
  * Tier mapping:
- *   no active entitlement  → "free"  (up to 20 items, 5 outfits)
- *   "premium" entitlement  → "unlock" (unlimited items + outfits)
+ *   no active RC entitlement               → "free"   (up to 20 items, 5 outfits)
+ *   "My Digital Collections Pro" entitled  → "unlock"  (unlimited items + outfits)
  *
  * PurchaseResult:
  *   "success"     — subscription activated
