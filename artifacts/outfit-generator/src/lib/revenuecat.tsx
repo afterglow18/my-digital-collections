@@ -64,7 +64,24 @@ export async function initializeRevenueCat(): Promise<void> {
     await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
   } catch { /* non-fatal */ }
 
-  await Purchases.configure({ apiKey });
+  // RC Capacitor v13 returns CustomerInfo from configure() — a network call.
+  // Awaiting it without a timeout blocks indefinitely if RC's servers are slow.
+  // A timeout here is safe: the SDK is ready to use even if CustomerInfo hasn't
+  // arrived yet; the query layer fetches it on first use.
+  try {
+    await Promise.race([
+      Purchases.configure({ apiKey }),
+      new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error("configure timed out")), 5000)
+      ),
+    ]);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (!msg.includes("timed out")) throw e;
+    // Timeout just means the initial CustomerInfo fetch was slow.
+    // The SDK itself is initialised — continue normally.
+    console.warn("[RevenueCat] configure() initial CustomerInfo fetch timed out — SDK still ready");
+  }
   console.log("[RevenueCat] Configured");
 }
 
