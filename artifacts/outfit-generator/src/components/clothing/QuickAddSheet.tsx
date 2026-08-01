@@ -1,11 +1,11 @@
 /**
  * QuickAddSheet
  *
- * Upload flow (single photo — camera or single gallery pick):
- *   pick ──► encoding ──► preview (Original | Cleaned ✨) ──► uploading ──► close
+ * Upload flow (single OR multi-photo):
+ *   pick ──► encoding ──► preview (Save Original | Save Cleaned ✨) ──► uploading ──► [next photo | close]
  *
- * Upload flow (multi-photo gallery pick):
- *   pick ──► uploading ──► close  (bg removal skipped for batch)
+ * Multi-photo: photos are queued and processed one at a time through the same
+ * preview screen. Header shows "Photo 2 of 5" etc.
  */
 import React, { useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -151,6 +151,11 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
   const [errorMsg,     setErrorMsg]     = useState<string | null>(null);
   const [progress,     setProgress]     = useState<UploadProgress | null>(null);
 
+  // ── Photo queue (multi-pick) ─────────────────────────────────────────────
+  const [photoQueue,  setPhotoQueue]  = useState<(File | Blob)[]>([]);
+  const [queueIndex,  setQueueIndex]  = useState(0);   // 0-based index of current photo
+  const [queueTotal,  setQueueTotal]  = useState(0);   // 0 = single photo (no counter shown)
+
   // ── Background-removal state ─────────────────────────────────────────────
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null);
   const [originalUrl,  setOriginalUrl]  = useState<string | null>(null);
@@ -182,6 +187,9 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     setCleanedUrl(null);
     setBgFailed(false);
     setSelected("original");
+    setPhotoQueue([]);
+    setQueueIndex(0);
+    setQueueTotal(0);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -273,19 +281,36 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
     }
   }, []);
 
-  // ── handleSave — from preview screen ─────────────────────────────────────
-  const handleSave = useCallback(async () => {
-    const blob = selected === "cleaned" && cleanedBlob ? cleanedBlob : originalBlob;
+  // ── advanceQueue — after saving one photo, load next or close ────────────
+  const advanceQueue = useCallback(async (savedIndex: number) => {
+    if (photoQueue.length > 0) {
+      const [next, ...rest] = photoQueue;
+      setPhotoQueue(rest);
+      setQueueIndex(savedIndex + 1);
+      await handleFile(next);
+    } else {
+      handleClose();
+    }
+  }, [photoQueue, handleFile, handleClose]);
+
+  // ── handleSaveOriginal — always saves the original photo ─────────────────
+  const handleSaveOriginal = useCallback(async () => {
+    if (!originalBlob) return;
+    setPhase("uploading");
+    const ok = await saveOneFile(originalBlob, existingCount + queueIndex);
+    if (!ok) { setErrorMsg("Save failed. Please try again."); setPhase("preview"); return; }
+    await advanceQueue(queueIndex);
+  }, [originalBlob, saveOneFile, existingCount, queueIndex, advanceQueue]);
+
+  // ── handleSaveCleaned — saves cleaned version (falls back to original) ───
+  const handleSaveCleaned = useCallback(async () => {
+    const blob = cleanedBlob ?? originalBlob;
     if (!blob) return;
     setPhase("uploading");
-    const ok = await saveOneFile(blob, existingCount);
-    if (ok) {
-      handleClose();
-    } else {
-      setErrorMsg("Save failed. Please try again.");
-      setPhase("preview");
-    }
-  }, [selected, cleanedBlob, originalBlob, saveOneFile, existingCount, handleClose]);
+    const ok = await saveOneFile(blob, existingCount + queueIndex);
+    if (!ok) { setErrorMsg("Save failed. Please try again."); setPhase("preview"); return; }
+    await advanceQueue(queueIndex);
+  }, [cleanedBlob, originalBlob, saveOneFile, existingCount, queueIndex, advanceQueue]);
 
   // ── handleTakePhoto — native camera ──────────────────────────────────────
   const handleTakePhoto = useCallback(async () => {
@@ -330,37 +355,16 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
       const photos = result.photos;
       if (!photos || photos.length === 0) return;
 
-      if (photos.length === 1) {
-        // Single pick → go through bg-removal preview
-        const res  = await fetch(photos[0].webPath);
-        const blob = await res.blob();
-        await handleFile(blob);
-        return;
+      // All picks (single or multi) go through the preview/clean screen
+      const blobs = await Promise.all(
+        photos.map(async (p) => { const r = await fetch(p.webPath); return r.blob(); })
+      );
+      if (blobs.length > 1) {
+        setPhotoQueue(blobs.slice(1));
+        setQueueIndex(0);
+        setQueueTotal(blobs.length);
       }
-
-      // Multi-pick → direct upload, no preview
-      setErrorMsg(null);
-      setPhase("uploading");
-      setProgress({ current: 0, total: photos.length });
-      let failed = 0;
-      for (let i = 0; i < photos.length; i++) {
-        setProgress({ current: i + 1, total: photos.length });
-        try {
-          const res  = await fetch(photos[i].webPath);
-          const blob = await res.blob();
-          const ok   = await saveOneFile(blob, existingCount + i);
-          if (!ok) failed++;
-        } catch {
-          failed++;
-        }
-      }
-      setProgress(null);
-      if (failed > 0) {
-        setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved. Please try again.`);
-        setPhase("pick");
-      } else {
-        handleClose();
-      }
+      await handleFile(blobs[0]);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
       if (msg.includes("cancel") || msg.includes("denied") || msg.includes("user denied")) return;
@@ -369,37 +373,21 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
       setPhase("pick");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingCount, handleClose, handleFile, saveOneFile]);
+  }, [handleFile]);
 
   // ── Browser file input fallback ───────────────────────────────────────────
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (!files.length) return;
-    if (files.length === 1) {
-      handleFile(files[0]);
-    } else {
-      // Multi-file: direct upload, no preview
-      (async () => {
-        setErrorMsg(null);
-        setPhase("uploading");
-        setProgress({ current: 0, total: files.length });
-        let failed = 0;
-        for (let i = 0; i < files.length; i++) {
-          setProgress({ current: i + 1, total: files.length });
-          const ok = await saveOneFile(files[i], existingCount + i);
-          if (!ok) failed++;
-        }
-        setProgress(null);
-        if (failed > 0) {
-          setErrorMsg(`${failed} photo${failed > 1 ? "s" : ""} could not be saved.`);
-          setPhase("pick");
-        } else {
-          handleClose();
-        }
-      })();
+    // All picks go through the preview/clean screen
+    if (files.length > 1) {
+      setPhotoQueue(files.slice(1));
+      setQueueIndex(0);
+      setQueueTotal(files.length);
     }
-  }, [handleFile, saveOneFile, existingCount, handleClose]);
+    handleFile(files[0]);
+  }, [handleFile]);
 
   if (!open) return null;
 
@@ -419,16 +407,20 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
       >
         <h2 className="font-display font-bold text-xl uppercase tracking-tight">
-          {phase === "preview" ? "Choose Version" : `Add ${label}`}
+          {phase === "preview"
+            ? queueTotal > 1
+              ? `Photo ${queueIndex + 1} of ${queueTotal}`
+              : "Choose Version"
+            : `Add ${label}`}
         </h2>
         {(phase === "pick" || phase === "preview") && (
           <button
-            onClick={phase === "preview" ? () => setPhase("pick") : handleClose}
+            onClick={phase === "preview" ? (queueTotal > 1 ? handleClose : () => setPhase("pick")) : handleClose}
             className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center
                        bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
                        active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
           >
-            {phase === "preview" ? <RotateCcw className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -590,34 +582,35 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
               </button>
             </div>
 
-            {/* Action row */}
+            {/* Action row — two explicit save buttons */}
             <div className="flex gap-3 mt-1">
+              {/* Save Original — always available once encoded */}
               <button
-                onClick={() => setPhase("pick")}
-                className="flex items-center justify-center gap-2 px-5 py-3
-                           border-3 border-black rounded-xl bg-white font-display font-bold text-sm uppercase
+                onClick={handleSaveOriginal}
+                disabled={!originalBlob}
+                className="flex-1 flex items-center justify-center gap-2 py-3
+                           border-4 border-black rounded-xl bg-white font-display font-bold text-sm uppercase
                            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                style={{ borderWidth: 3 }}
+                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all
+                           disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <RotateCcw className="w-4 h-4" />
-                Retake
+                <Check className="w-4 h-4" />
+                Save Original
               </button>
+              {/* Save Cleaned — available once bg removal finishes */}
               <button
-                onClick={handleSave}
-                disabled={selected === "cleaned" ? !cleanedUrl : !originalBlob}
+                onClick={handleSaveCleaned}
+                disabled={!cleanedUrl && !bgFailed}
                 className="flex-1 flex items-center justify-center gap-2 py-3
                            border-4 border-black rounded-xl bg-primary font-display font-bold text-sm uppercase
                            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
                            active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all
-                           disabled:opacity-50 disabled:cursor-not-allowed"
+                           disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {selected === "cleaned" && !cleanedUrl ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
-                ) : selected === "cleaned" ? (
-                  <><Check className="w-4 h-4" /> Save Cleaned Version</>
+                {bgProcessing ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Cleaning…</>
                 ) : (
-                  <><Check className="w-4 h-4" /> Save to Collection</>
+                  <><Check className="w-4 h-4" /> Save Cleaned ✨</>
                 )}
               </button>
             </div>
