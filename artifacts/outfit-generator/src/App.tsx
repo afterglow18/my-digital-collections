@@ -10,6 +10,7 @@ import AccountPage from './pages/account';
 import WelcomePage from './pages/welcome';
 import { SubscriptionProvider } from '@/lib/revenuecat';
 import { queryClient } from '@/lib/queryClient';
+import { Toaster } from '@/components/ui/sonner';
 
 // RevenueCat is initialised once in main.tsx before React mounts.
 
@@ -73,6 +74,7 @@ function App() {
       <SubscriptionProvider>
         <AppShell />
       </SubscriptionProvider>
+      <Toaster position="bottom-center" />
     </QueryClientProvider>
   );
 }

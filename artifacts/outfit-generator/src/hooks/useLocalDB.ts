@@ -7,6 +7,7 @@
  */
 
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { queueItemForIndexing } from "@/lib/visionIndexer";
 import {
   listClothing,
   getClothingItem,
@@ -89,6 +90,7 @@ export function useCreateClothingItem() {
     };
   }>({
     mutationFn: ({ data }) => createClothingItem(data),
+    onSuccess:  (item) => queueItemForIndexing(item.id),
   });
 }
 

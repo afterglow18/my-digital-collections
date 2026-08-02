@@ -35,6 +35,10 @@ export interface StoredClothingItem {
   purchaseDate?:  string | null;
   notes?:         string | null;
   bgRemoved?:     boolean;       // true once the cleaned version has been saved
+  // ── Vision / search fields (added in schema v2) ───────────────────────────
+  visionLabels?:  string[] | null;  // dominant colours (web) or scene labels (native iOS)
+  visionText?:    string[] | null;  // OCR text detected inside the photo (native iOS)
+  visionVersion?: number;           // 0=unanalysed 1=native 4=web-ok 5=web-empty
   createdAt:      string;
   updatedAt:      string;
 }

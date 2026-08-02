@@ -2,6 +2,10 @@
  * ItemDetailsSheet — full-screen overlay showing a clothing item's details.
  * Styled to match the dark gold luxury theme of the wardrobe/generate pages.
  * Uses custom in-app pickers so no native iOS system UI interrupts the flow.
+ *
+ * Props:
+ *   showAddToLookbook — when true (search results, Favorites), shows an
+ *   "Add to Lookbook" picker instead of "Clean Up Photo".
  */
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,9 +13,13 @@ import { X, Heart, Trash2, Save, Check, Sparkles, ChevronDown } from "lucide-rea
 import { CleanUpPhotoOverlay } from "./CleanUpPhotoOverlay";
 import {
   type ClothingItem,
+  type SavedOutfit,
   type ClothingItemUpdateCategory,
   useUpdateClothingItem,
   useDeleteClothingItem,
+  useListOutfits,
+  useAddItemToOutfit,
+  useRemoveItemFromOutfit,
   getListClothingQueryKey,
   getListOutfitsQueryKey,
   getWardrobeStatsQueryKey,
@@ -88,7 +96,6 @@ function Field({
 }
 
 // ── Custom in-app picker ───────────────────────────────────────────────────────
-// Opens an inline bottom-sheet within the scroll container. No native UI.
 
 interface PickerOption { label: string; value: string; }
 
@@ -101,12 +108,10 @@ function PickerField({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Normalise options to {label, value}
   const normalised: PickerOption[] = options.map((o) =>
     typeof o === "string" ? { label: o, value: o } : o
   );
 
-  // Close on outside tap
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
@@ -127,7 +132,6 @@ function PickerField({
     <div ref={ref} style={{ display: "flex", flexDirection: "column", position: "relative" }}>
       <label style={labelStyle}>{label}</label>
 
-      {/* Trigger button */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -150,7 +154,6 @@ function PickerField({
         />
       </button>
 
-      {/* Inline option list */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -204,6 +207,151 @@ function PickerField({
   );
 }
 
+// ── Lookbook picker sheet ─────────────────────────────────────────────────────
+// Shown when showAddToLookbook=true and the user taps "Add to Lookbook".
+
+function LookbookPickerSheet({
+  item,
+  onClose,
+}: {
+  item: ClothingItem;
+  onClose: () => void;
+}) {
+  const { data: outfits = [] } = useListOutfits();
+  const addItem    = useAddItemToOutfit();
+  const removeItem = useRemoveItemFromOutfit();
+  const qc         = useQueryClient();
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  const toggle = async (outfit: SavedOutfit) => {
+    const alreadyIn = outfit.items.some((i) => i.id === item.id);
+    setBusyId(outfit.id);
+    try {
+      if (alreadyIn) {
+        await removeItem.mutateAsync({ id: outfit.id, itemId: item.id });
+      } else {
+        await addItem.mutateAsync({ id: outfit.id, data: { itemId: item.id } });
+      }
+      qc.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: "100%" }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: "100%" }}
+      transition={{ type: "spring", damping: 28, stiffness: 240 }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 70,
+        display: "flex", flexDirection: "column",
+        maxWidth: 448, margin: "0 auto",
+        background: T.bg,
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "16px",
+        paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+        borderBottom: `1px solid ${T.goldBorder}`,
+        flexShrink: 0,
+      }}>
+        <h2 style={{
+          fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 15,
+          letterSpacing: "0.08em", textTransform: "uppercase",
+          color: T.textPrimary, margin: 0,
+        }}>
+          Add to Lookbook
+        </h2>
+        <button
+          onClick={onClose}
+          style={{
+            width: 32, height: 32, borderRadius: "50%",
+            border: `1.5px solid ${T.goldBorder}`, background: T.bgCard,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <X style={{ width: 14, height: 14, color: T.textMuted }} />
+        </button>
+      </div>
+
+      {/* Outfit list */}
+      <div style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+        {outfits.length === 0 && (
+          <p style={{ textAlign: "center", color: T.textMuted, fontSize: 13, marginTop: 40, padding: "0 16px" }}>
+            No lookbook groups yet. Create one from your Collection.
+          </p>
+        )}
+        {outfits.map((outfit) => {
+          const alreadyIn = outfit.items.some((i) => i.id === item.id);
+          const busy      = busyId === outfit.id;
+          const thumbs    = outfit.items.slice(0, 3);
+
+          return (
+            <button
+              key={outfit.id}
+              onClick={() => toggle(outfit)}
+              disabled={busy}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                width: "100%", padding: 12, borderRadius: 12,
+                background: alreadyIn ? "rgba(184,137,78,0.12)" : T.bgCard,
+                border: `1.5px solid ${alreadyIn ? T.goldBorderHi : T.goldBorder}`,
+                cursor: busy ? "default" : "pointer",
+                opacity: busy ? 0.5 : 1,
+                textAlign: "left",
+              }}
+            >
+              {/* 3 thumbnails */}
+              <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+                {Array.from({ length: 3 }).map((_, idx) => {
+                  const thumb = thumbs[idx];
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        width: 36, height: 36, borderRadius: 6,
+                        background: "#1a1208", overflow: "hidden",
+                        border: `1px solid ${T.goldBorder}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {thumb?.imageObjectPath && (
+                        <img
+                          src={getImageUrl(thumb.imageObjectPath)!}
+                          alt=""
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Name */}
+              <span style={{
+                flex: 1, fontSize: 13, fontWeight: 600,
+                color: T.textPrimary, fontFamily: "var(--font-sans)",
+              }}>
+                {outfit.name}
+              </span>
+
+              {/* Checkmark if already in outfit */}
+              {alreadyIn && (
+                <Check style={{ width: 15, height: 15, color: T.gold, flexShrink: 0 }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 const SEASON_OPTIONS   = ["", "Spring", "Summer", "Fall", "Winter", "All Season"];
@@ -216,9 +364,10 @@ const CATEGORY_OPTIONS: { label: string; value: string }[] = [
 ];
 
 interface ItemDetailsSheetProps {
-  item: ClothingItem | null;
-  onClose: () => void;
-  onDeleted?: () => void;
+  item:               ClothingItem | null;
+  onClose:            () => void;
+  onDeleted?:         () => void;
+  showAddToLookbook?: boolean;
 }
 
 interface FormState {
@@ -261,11 +410,17 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
-  const [form, setForm]                           = useState<FormState | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCleanUp,       setShowCleanUp]       = useState(false);
-  const [displayImageUrl,   setDisplayImageUrl]   = useState<string | null>(
+export function ItemDetailsSheet({
+  item,
+  onClose,
+  onDeleted,
+  showAddToLookbook = false,
+}: ItemDetailsSheetProps) {
+  const [form,                setForm]                = useState<FormState | null>(null);
+  const [showDeleteConfirm,   setShowDeleteConfirm]   = useState(false);
+  const [showCleanUp,         setShowCleanUp]         = useState(false);
+  const [showLookbookPicker,  setShowLookbookPicker]  = useState(false);
+  const [displayImageUrl,     setDisplayImageUrl]     = useState<string | null>(
     item?.imageObjectPath ?? null
   );
 
@@ -280,6 +435,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     }
     setShowDeleteConfirm(false);
     setShowCleanUp(false);
+    setShowLookbookPicker(false);
   }, [item?.id]);
 
   if (!item || !form) return null;
@@ -427,9 +583,11 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
             />
           </div>
-          {!item.bgRemoved && !displayImageUrl.startsWith("data:image/png") && (
+
+          {/* Context-aware action button below photo */}
+          {showAddToLookbook ? (
             <button
-              onClick={() => setShowCleanUp(true)}
+              onClick={() => setShowLookbookPicker(true)}
               style={{
                 width: "100%", display: "flex", alignItems: "center",
                 justifyContent: "center", gap: 6, padding: "10px 16px",
@@ -438,12 +596,31 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 cursor: "pointer",
                 fontSize: 10, fontWeight: 700,
                 letterSpacing: "0.14em", textTransform: "uppercase" as const,
-                color: T.textMuted, fontFamily: "var(--font-display)",
+                color: T.gold, fontFamily: "var(--font-display)",
               }}
             >
-              <Sparkles style={{ width: 13, height: 13 }} />
-              Clean Up Photo
+              🪙
+              Add to Lookbook
             </button>
+          ) : (
+            !item.bgRemoved && !displayImageUrl.startsWith("data:image/png") && (
+              <button
+                onClick={() => setShowCleanUp(true)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center",
+                  justifyContent: "center", gap: 6, padding: "10px 16px",
+                  background: T.bgCard,
+                  border: "none", borderTop: `1px solid ${T.goldBorder}`,
+                  cursor: "pointer",
+                  fontSize: 10, fontWeight: 700,
+                  letterSpacing: "0.14em", textTransform: "uppercase" as const,
+                  color: T.textMuted, fontFamily: "var(--font-display)",
+                }}
+              >
+                <Sparkles style={{ width: 13, height: 13 }} />
+                Clean Up Photo
+              </button>
+            )
           )}
         </div>
       )}
@@ -496,16 +673,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <PickerField label="Category" value={form.category}
-            onChange={patch("category") as (v: string) => void} options={CATEGORY_OPTIONS} />
-          <div style={{ display: "flex", flexDirection: "column", opacity: 0.4, pointerEvents: "none" }}>
-            <label style={labelStyle}>Times Worn</label>
-            <div style={{ ...inputBase, color: T.textMuted }}>
-              {item.timesWorn ?? 0}
-            </div>
-          </div>
-        </div>
+        <PickerField label="Category" value={form.category}
+          onChange={patch("category") as (v: string) => void} options={CATEGORY_OPTIONS} />
       </div>
 
       {/* ── Footer ── */}
@@ -590,6 +759,17 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           </div>
         )}
       </div>
+
+      {/* ── Lookbook picker overlay ── */}
+      <AnimatePresence>
+        {showLookbookPicker && (
+          <LookbookPickerSheet
+            key="lookbook-picker"
+            item={item}
+            onClose={() => setShowLookbookPicker(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Clean Up overlay ── */}
       <AnimatePresence>

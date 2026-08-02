@@ -67,6 +67,14 @@ workflows:
           fi
           npx cap add ios
           npx cap sync ios
+          # Copy local Vision plugin Swift/ObjC files into the Xcode project
+          PLUGIN_SRC="ios-plugins/VisionPlugin"
+          PLUGIN_DST="ios/App/App"
+          if [ -d "$PLUGIN_SRC" ]; then
+            cp "$PLUGIN_SRC"/*.swift "$PLUGIN_DST/"
+            cp "$PLUGIN_SRC"/*.m     "$PLUGIN_DST/"
+            echo "[Vision] Plugin files copied to $PLUGIN_DST"
+          fi
 
       - name: Inject app icon
         script: |
