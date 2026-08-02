@@ -17,7 +17,6 @@
  */
 
 import { Capacitor } from "@capacitor/core";
-import { toast } from "sonner";
 import { listClothing, updateClothingItem } from "@/lib/localDB";
 import { extractColorsFromDataUrl } from "@/lib/visionWeb";
 import { analyzeImageNative } from "@/lib/visionNative";
@@ -67,7 +66,6 @@ async function runIndexer(): Promise<void> {
     if (workSet.size === 0) return;
 
     const toProcess = allItems.filter((i) => workSet.has(i.id));
-    const toastId   = toast.loading("Preparing photo search…");
 
     for (const item of toProcess) {
       try {
@@ -104,8 +102,6 @@ async function runIndexer(): Promise<void> {
 
       await delay(DELAY_MS);
     }
-
-    toast.dismiss(toastId);
   } finally {
     indexerRunning = false;
 
