@@ -599,8 +599,7 @@ export function ItemDetailsSheet({
                 color: T.gold, fontFamily: "var(--font-display)",
               }}
             >
-              🪙
-              Add to Lookbook
+              🪙 Add to Lookbook
             </button>
           ) : (
             !item.bgRemoved && !displayImageUrl.startsWith("data:image/png") && (
