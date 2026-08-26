@@ -75,6 +75,21 @@ workflows:
             cp "$PLUGIN_SRC"/*.m     "$PLUGIN_DST/"
             echo "[Vision] Plugin files copied to $PLUGIN_DST"
           fi
+          # Restrict the generated App target to iPhone/iPod only.
+          PBXPROJ="ios/App/App.xcodeproj/project.pbxproj"
+          if [ -f "$PBXPROJ" ]; then
+            perl -0pi -e 's/TARGETED_DEVICE_FAMILY = [^;]+;/TARGETED_DEVICE_FAMILY = 1;/g' "$PBXPROJ"
+            echo "[iOS] TARGETED_DEVICE_FAMILY set to iPhone only"
+          fi
+          # Also write the device family directly into Info.plist so the
+          # archived app remains iPhone-only regardless of Xcode defaults.
+          INFO_PLIST="ios/App/App/Info.plist"
+          if [ -f "$INFO_PLIST" ]; then
+            /usr/libexec/PlistBuddy -c "Delete :UIDeviceFamily" "$INFO_PLIST" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :UIDeviceFamily array" "$INFO_PLIST"
+            /usr/libexec/PlistBuddy -c "Add :UIDeviceFamily:0 integer 1" "$INFO_PLIST"
+            echo "[iOS] UIDeviceFamily set to iPhone only"
+          fi
 
       - name: Inject app icon
         script: |

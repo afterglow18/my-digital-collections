@@ -25,17 +25,11 @@ const config: CapacitorConfig = {
       NSPhotoLibraryAddUsageDescription:
         'My Digital Collections saves photos you capture with the camera back to your photo library.',
 
-      // iPhone: portrait only (the background image is portrait-oriented).
+      // iPhone-only distribution; do not advertise an iPad device family.
+      UIDeviceFamily: [1],
       UISupportedInterfaceOrientations: [
         'UIInterfaceOrientationPortrait',
         'UIInterfaceOrientationPortraitUpsideDown',
-      ],
-      // iPad: allow landscape too — the fraction-based layout adapts.
-      'UISupportedInterfaceOrientations~ipad': [
-        'UIInterfaceOrientationPortrait',
-        'UIInterfaceOrientationPortraitUpsideDown',
-        'UIInterfaceOrientationLandscapeLeft',
-        'UIInterfaceOrientationLandscapeRight',
       ],
     },
   },
